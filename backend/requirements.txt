@@ -6,7 +6,7 @@ matplotlib
 seaborn
 scikit-learn
 jupyter
-pymongo
+pymongo[srv]
 email-validator
 pdfplumber
 pypdf
