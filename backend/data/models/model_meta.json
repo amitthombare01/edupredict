@@ -1,0 +1,13 @@
+{
+  "target": "final_score",
+  "model_type": "regression",
+  "features": [
+    "study_hours",
+    "attendance",
+    "previous_score",
+    "assignments_completed",
+    "sleep_hours"
+  ],
+  "trained_on": "2026-03-16T13:48:18.996145Z",
+  "score": 0.8107847264432987
+}

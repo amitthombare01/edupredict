@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduPredict Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08111d;
+  --surface:#101a2b;
+  --surface2:#16233a;
+  --border:rgba(255,255,255,0.08);
+  --text:#edf2ff;
+  --muted:#8a95ab;
+  --accent:#7dd3fc;
+  --accent2:#34d399;
+  --danger:#f87171;
+  --warning:#fbbf24;
+}
+body{
+  min-height:100vh;
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(125,211,252,0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(52,211,153,0.12), transparent 28%),
+    linear-gradient(180deg, #08111d 0%, #0d1524 100%);
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size:44px 44px;
+  pointer-events:none;
+}
+header{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:1rem 1.5rem;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,17,29,0.86);
+  backdrop-filter:blur(18px);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:.8rem;
+}
+.brand-mark{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#04111e;
+  font-weight:800;
+}
+.brand h1{
+  font-family:'Syne',sans-serif;
+  font-size:1.1rem;
+}
+.header-actions{
+  display:flex;
+  gap:.7rem;
+  flex-wrap:wrap;
+}
+main{
+  max-width:1180px;
+  margin:0 auto;
+  padding:2rem 1.25rem 4rem;
+  position:relative;
+  z-index:1;
+}
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:.75rem 1.1rem;
+  font:inherit;
+  cursor:pointer;
+  transition:transform .18s ease, filter .18s ease, border-color .18s ease;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#04111e;
+  font-weight:700;
+}
+.btn-ghost{
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-danger{
+  background:rgba(248,113,113,0.12);
+  color:var(--danger);
+  border:1px solid rgba(248,113,113,0.25);
+}
+.screen{display:none}
+.screen.active{display:block}
+.panel{
+  background:rgba(16,26,43,0.92);
+  border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.login-shell{
+  max-width:460px;
+  margin:4rem auto 0;
+  padding:2rem;
+}
+.login-shell h2,
+.admin-card h2,
+.admin-card h3{
+  font-family:'Syne',sans-serif;
+}
+.login-shell p{
+  color:var(--muted);
+  margin:.75rem 0 1.3rem;
+  line-height:1.6;
+}
+form{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+input{
+  width:100%;
+  padding:.9rem 1rem;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font:inherit;
+}
+input:focus{
+  outline:none;
+  border-color:rgba(125,211,252,0.6);
+}
+.hint,.status{
+  font-size:.84rem;
+  color:var(--muted);
+  min-height:1.2rem;
+}
+.admin-hero{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:1.4rem;
+  flex-wrap:wrap;
+}
+.admin-hero p{
+  color:var(--muted);
+  margin-top:.45rem;
+}
+.admin-grid{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:1rem;
+}
+.admin-card{
+  padding:1.35rem;
+}
+.admin-card p{
+  color:var(--muted);
+  margin:.45rem 0 1rem;
+  line-height:1.55;
+}
+.user-list{
+  display:flex;
+  flex-direction:column;
+  gap:.85rem;
+  max-height:580px;
+  overflow:auto;
+}
+.user-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:.9rem;
+  padding:1rem;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.03);
+}
+.user-row strong{
+  display:block;
+  margin-bottom:.25rem;
+}
+.user-row small{
+  display:block;
+  color:var(--muted);
+  line-height:1.5;
+}
+.user-actions{
+  display:flex;
+  gap:.5rem;
+  flex-wrap:wrap;
+}
+.form-actions{
+  display:flex;
+  gap:.7rem;
+  flex-wrap:wrap;
+}
+.empty{
+  color:var(--muted);
+  font-size:.9rem;
+  padding:1rem 0;
+}
+@media(max-width:860px){
+  .admin-grid{grid-template-columns:1fr}
+  .user-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-mark">A</div>
+    <div>
+      <h1>EduPredict Admin</h1>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a href="/" class="btn btn-ghost">Back To Login</a>
+    <button id="admin-logout" class="btn btn-danger" type="button" style="display:none">Logout</button>
+  </div>
+</header>
+
+<main>
+  <section id="admin-login-screen" class="screen active">
+    <div class="panel login-shell">
+      <h2>Admin Sign In</h2>
+      <p>Use the admin account to manage registered users. You can update account details or delete users from the panel after login.</p>
+      <form id="admin-login-form">
+        <input type="email" id="admin-login-email" placeholder="Admin email" required>
+        <input type="password" id="admin-login-password" placeholder="Admin password" required>
+        <button class="btn btn-primary" type="submit">Login As Admin</button>
+        <div id="admin-login-status" class="status"></div>
+      </form>
+      <div class="hint">Default admin login: <code>admin@edupredict.com</code> / <code>Admin1234</code></div>
+    </div>
+  </section>
+
+  <section id="admin-panel-screen" class="screen">
+    <div class="admin-hero">
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:2rem">User Management</h2>
+        <p>Review registered accounts, update their profile details, or remove users you no longer want in the system.</p>
+      </div>
+      <button id="refresh-users" class="btn btn-ghost" type="button">Refresh Users</button>
+    </div>
+
+    <div class="admin-grid">
+      <div class="panel admin-card">
+        <h3>Registered Users</h3>
+        <p>Select a user to edit, or delete a user directly from the list.</p>
+        <div id="admin-user-list" class="user-list">
+          <div class="empty">Loading users...</div>
+        </div>
+      </div>
+
+      <div class="panel admin-card">
+        <h3>Edit Selected User</h3>
+        <p>Leave the password blank if you only want to change the name or email.</p>
+        <form id="admin-user-form">
+          <input type="hidden" id="admin-original-email">
+          <input type="text" id="admin-name" placeholder="Full name" required>
+          <input type="email" id="admin-email" placeholder="Email" required>
+          <input type="password" id="admin-password" placeholder="New password (optional)" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}">
+          <div class="hint">Password rule: minimum 8 characters with at least 1 letter and 1 number.</div>
+          <div class="form-actions">
+            <button id="admin-clear-btn" class="btn btn-ghost" type="button">Clear</button>
+            <button class="btn btn-primary" type="submit">Save User</button>
+          </div>
+          <div id="admin-status" class="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+const ADMIN_SESSION_KEY = "edupredict-admin-auth";
+let adminUsers = [];
+const ADMIN_LOGIN_ENDPOINTS = [
+  `${API}/api/admin/login`,
+  `${API}/admin/login`
+];
+
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPassword(password){
+  return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+}
+
+function setLoginStatus(message, color='var(--muted)'){
+  const el = document.getElementById('admin-login-status');
+  el.style.color = color;
+  el.textContent = message;
+}
+
+function setAdminStatus(message, color='var(--muted)'){
+  const el = document.getElementById('admin-status');
+  el.style.color = color;
+  el.textContent = message;
+}
+
+function showAdminScreen(isLoggedIn){
+  document.getElementById('admin-login-screen').classList.toggle('active', !isLoggedIn);
+  document.getElementById('admin-panel-screen').classList.toggle('active', isLoggedIn);
+  document.getElementById('admin-logout').style.display = isLoggedIn ? 'inline-flex' : 'none';
+}
+
+function formatAdminDate(value){
+  if(!value) return 'Recently';
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return 'Recently';
+  return date.toLocaleString();
+}
+
+function clearAdminForm(){
+  const form = document.getElementById('admin-user-form');
+  form.reset();
+  document.getElementById('admin-original-email').value = '';
+  setAdminStatus('Select a user to edit.');
+}
+
+function fillAdminForm(user){
+  document.getElementById('admin-original-email').value = user.email || '';
+  document.getElementById('admin-name').value = user.name || '';
+  document.getElementById('admin-email').value = user.email || '';
+  document.getElementById('admin-password').value = '';
+  setAdminStatus(`Editing ${user.name || user.email}`);
+}
+
+function renderAdminUsers(users){
+  const listEl = document.getElementById('admin-user-list');
+  if(!users.length){
+    listEl.innerHTML = '<div class="empty">No registered users found.</div>';
+    return;
+  }
+
+  listEl.innerHTML = users.map(user => `
+    <div class="user-row">
+      <div>
+        <strong>${user.name || 'Unnamed User'}</strong>
+        <small>${user.email || 'No email'}</small>
+        <small>Created ${formatAdminDate(user.created_at || user.updated_at)}</small>
+      </div>
+      <div class="user-actions">
+        <button class="btn btn-ghost" type="button" data-edit-email="${user.email}">Edit</button>
+        <button class="btn btn-danger" type="button" data-delete-email="${user.email}">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  listEl.querySelectorAll('[data-edit-email]').forEach(button => {
+    button.addEventListener('click', () => {
+      const selected = adminUsers.find(user => user.email === button.dataset.editEmail);
+      if(selected) fillAdminForm(selected);
+    });
+  });
+
+  listEl.querySelectorAll('[data-delete-email]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const email = button.dataset.deleteEmail;
+      if(!email) return;
+      const confirmed = window.confirm(`Delete user ${email}? This action cannot be undone.`);
+      if(!confirmed) return;
+
+      setAdminStatus(`Deleting ${email}...`);
+      try{
+        const response = await fetch(`${API}/api/users/${encodeURIComponent(email)}`, {
+          method: 'DELETE'
+        });
+        const payload = await response.json().catch(() => ({detail: response.statusText}));
+        if(!response.ok){
+          throw new Error(payload.detail || payload.message || 'Unable to delete user');
+        }
+
+        if(document.getElementById('admin-original-email').value === email){
+          clearAdminForm();
+        }
+        setAdminStatus(payload.message || 'User deleted successfully.', 'var(--accent2)');
+        await loadAdminUsers();
+      }catch(err){
+        setAdminStatus(err.message || 'Unable to delete user.', 'var(--danger)');
+      }
+    });
+  });
+}
+
+async function loadAdminUsers(){
+  const listEl = document.getElementById('admin-user-list');
+  listEl.innerHTML = '<div class="empty">Loading users...</div>';
+
+  try{
+    const response = await fetch(`${API}/api/users`);
+    const payload = await response.json().catch(() => ({users: []}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Unable to load users');
+    }
+
+    adminUsers = Array.isArray(payload.users) ? payload.users : [];
+    renderAdminUsers(adminUsers);
+    if(!document.getElementById('admin-original-email').value){
+      setAdminStatus('Select a user to edit.');
+    }
+  }catch(err){
+    listEl.innerHTML = `<div class="empty" style="color:var(--danger)">${err.message || 'Unable to load users.'}</div>`;
+    setAdminStatus(err.message || 'Unable to load users.', 'var(--danger)');
+  }
+}
+
+document.getElementById('admin-login-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const email = document.getElementById('admin-login-email').value.trim();
+  const password = document.getElementById('admin-login-password').value;
+
+  if(!isValidEmail(email)){
+    setLoginStatus('Use a valid admin email address.', 'var(--danger)');
+    return;
+  }
+
+  setLoginStatus('Checking admin credentials...');
+
+  try{
+    let lastError = null;
+    let payload = null;
+
+    for(const endpoint of ADMIN_LOGIN_ENDPOINTS){
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password})
+      });
+
+      payload = await response.json().catch(() => ({detail: response.statusText}));
+      if(response.ok){
+        lastError = null;
+        break;
+      }
+
+      if(response.status !== 404){
+        throw new Error(payload.detail || payload.message || 'Admin login failed');
+      }
+
+      lastError = new Error(payload.detail || payload.message || 'Admin login endpoint not found');
+    }
+
+    if(lastError){
+      throw lastError;
+    }
+
+    sessionStorage.setItem(ADMIN_SESSION_KEY, email.toLowerCase());
+    setLoginStatus('');
+    showAdminScreen(true);
+    await loadAdminUsers();
+  }catch(err){
+    setLoginStatus(err.message || 'Admin login failed.', 'var(--danger)');
+  }
+});
+
+document.getElementById('admin-user-form').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const originalEmail = document.getElementById('admin-original-email').value.trim();
+  const name = document.getElementById('admin-name').value.trim();
+  const email = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+
+  if(!originalEmail){
+    setAdminStatus('Select a user before saving.', 'var(--danger)');
+    return;
+  }
+  if(!name){
+    setAdminStatus('Name is required.', 'var(--danger)');
+    return;
+  }
+  if(!isValidEmail(email)){
+    setAdminStatus('Use a valid email like name@example.com.', 'var(--danger)');
+    return;
+  }
+  if(password && !isValidPassword(password)){
+    setAdminStatus('Password must be at least 8 characters and include at least 1 letter and 1 number.', 'var(--danger)');
+    return;
+  }
+
+  setAdminStatus('Saving user...');
+
+  try{
+    const response = await fetch(`${API}/api/users`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        original_email: originalEmail,
+        name,
+        email,
+        password: password || null
+      })
+    });
+    const payload = await response.json().catch(() => ({detail: response.statusText}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Unable to update user');
+    }
+
+    document.getElementById('admin-original-email').value = email.toLowerCase();
+    document.getElementById('admin-password').value = '';
+    setAdminStatus(payload.message || 'User updated successfully.', 'var(--accent2)');
+    await loadAdminUsers();
+  }catch(err){
+    setAdminStatus(err.message || 'Unable to update user.', 'var(--danger)');
+  }
+});
+
+document.getElementById('admin-clear-btn').addEventListener('click', clearAdminForm);
+
+document.getElementById('refresh-users').addEventListener('click', loadAdminUsers);
+
+document.getElementById('admin-logout').addEventListener('click', () => {
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  document.getElementById('admin-login-form').reset();
+  clearAdminForm();
+  adminUsers = [];
+  showAdminScreen(false);
+  setLoginStatus('Logged out.', 'var(--muted)');
+});
+
+if(sessionStorage.getItem(ADMIN_SESSION_KEY)){
+  showAdminScreen(true);
+  loadAdminUsers();
+}else{
+  showAdminScreen(false);
+  clearAdminForm();
+}
+</script>
+</body>
+</html>

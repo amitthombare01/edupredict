@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+jupyter
+pymongo
+email-validator
+pdfplumber
+pypdf

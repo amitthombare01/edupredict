@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduPredict — Student Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#07090f;
+  --surface:#0e1320;
+  --surface2:#151d2e;
+  --surface3:#1c2740;
+  --border:rgba(255,255,255,0.07);
+  --accent:#4fffb0;
+  --accent2:#38bdf8;
+  --accent3:#a78bfa;
+  --accent4:#fb923c;
+  --accent5:#f472b6;
+  --text:#e8eaf2;
+  --muted:#6b7280;
+  --danger:#f87171;
+  --glow-green:rgba(79,255,176,0.15);
+  --glow-blue:rgba(56,189,248,0.15);
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Animated background grid */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(79,255,176,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,255,176,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* Glowing orbs */
+body::after{
+  content:'';
+  position:fixed;
+  top:-200px;
+  right:-100px;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+  animation:orb 8s ease-in-out infinite alternate;
+}
+
+@keyframes orb{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(-50px,80px) scale(1.1)}
+}
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 2.5rem;
+  height:68px;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(7,9,15,0.85);
+  backdrop-filter:blur(20px);
+}
+
+.logo{display:flex;align-items:center;gap:.7rem}
+.logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;
+  display:grid;place-items:center;
+  font-size:18px;
+  box-shadow:0 0 20px rgba(79,255,176,0.3);
+}
+.logo h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:-.02em}
+
+nav{display:flex;gap:.5rem}
+
+button{cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s ease}
+
+.btn-primary{
+  background:var(--accent);
+  color:#07090f;
+  padding:.5rem 1.3rem;
+  border-radius:8px;
+  font-weight:700;
+  font-size:.875rem;
+}
+.btn-primary:hover{filter:brightness(1.1);box-shadow:0 0 20px rgba(79,255,176,.3)}
+
+.btn-ghost{
+  background:transparent;
+  border:1px solid var(--border);
+  padding:.45rem 1.1rem;
+  color:var(--muted);
+  border-radius:8px;
+  font-size:.875rem;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.auth-note{
+  margin-top:.4rem;
+  font-size:.78rem;
+  color:var(--muted);
+  display:flex;
+  gap:.4rem;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.note-btn{
+  padding:.15rem .9rem;
+  border-radius:999px;
+  font-size:.7rem;
+}
+.field-hint{
+  margin-top:-.5rem;
+  font-size:.76rem;
+  color:var(--muted);
+  line-height:1.45;
+}
+.auth-actions{
+  display:flex;
+  gap:.6rem;
+  flex-wrap:wrap;
+}
+.auth-actions .btn-ghost{
+  flex:1 1 150px;
+}
+.inline-panel{
+  margin-top:1rem;
+  padding:1rem;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+}
+.inline-panel h3{
+  font-family:'Syne',sans-serif;
+  font-size:1rem;
+  margin-bottom:.35rem;
+}
+.inline-panel p{
+  color:var(--muted);
+  font-size:.8rem;
+  margin-bottom:.8rem;
+  line-height:1.5;
+}
+.admin-grid{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:1rem;
+  margin-top:1rem;
+}
+.admin-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.25rem;
+}
+.admin-card h3{
+  font-family:'Syne',sans-serif;
+  font-size:1rem;
+  margin-bottom:.35rem;
+}
+.admin-card p{
+  color:var(--muted);
+  font-size:.82rem;
+  margin-bottom:1rem;
+  line-height:1.5;
+}
+.admin-user-list{
+  display:flex;
+  flex-direction:column;
+  gap:.75rem;
+  max-height:380px;
+  overflow:auto;
+}
+.admin-user-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:.8rem;
+  padding:.9rem 1rem;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.02);
+}
+.admin-user-meta{
+  min-width:0;
+}
+.admin-user-name{
+  font-weight:700;
+  margin-bottom:.2rem;
+}
+.admin-user-email{
+  color:var(--muted);
+  font-size:.82rem;
+  word-break:break-word;
+}
+.admin-actions{
+  display:flex;
+  gap:.6rem;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+.admin-status{
+  min-height:1.2rem;
+  font-size:.82rem;
+}
+@media(max-width:860px){
+  .admin-grid{grid-template-columns:1fr}
+}
+
+.btn-danger{
+  background:rgba(248,113,113,.1);
+  color:var(--danger);
+  padding:.45rem 1.1rem;
+  border-radius:8px;
+  border:1px solid rgba(248,113,113,.2);
+  font-size:.875rem;
+}
+.btn-danger:hover{background:rgba(248,113,113,.2)}
+
+.btn-accent2{
+  background:linear-gradient(135deg,var(--accent2),var(--accent3));
+  color:#fff;
+  padding:.5rem 1.3rem;
+  border-radius:8px;
+  font-weight:600;
+  font-size:.875rem;
+}
+.btn-accent2:hover{filter:brightness(1.1);box-shadow:0 0 20px rgba(56,189,248,.3)}
+
+/* MAIN */
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:3rem 1.5rem 5rem;
+  position:relative;
+  z-index:1;
+}
+
+/* FORMS */
+.form-container{max-width:440px;margin:auto;padding-top:4rem}
+.form-card{
+  background:var(--surface);
+  padding:2.5rem;
+  border-radius:20px;
+  border:1px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.form-card h2{font-family:'Syne',sans-serif;font-weight:800;margin-bottom:1.5rem;font-size:1.5rem}
+
+form{display:flex;flex-direction:column;gap:1rem}
+
+input{
+  padding:.8rem 1rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:.9rem;
+  transition:border-color .2s;
+}
+input:focus{outline:none;border-color:rgba(79,255,176,.4)}
+input[type=file]{padding:.6rem}
+
+/* DASHBOARD */
+.dash-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:2.5rem;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+.dash-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem}
+.dash-subtitle{color:var(--muted);font-size:.9rem;margin-top:.2rem}
+
+.section-title{
+  font-family:'Syne',sans-serif;
+  margin-bottom:1.2rem;
+  font-size:1rem;
+  font-weight:700;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* STATS GRID */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1rem;
+  margin-bottom:2.5rem;
+}
+
+.stat-card{
+  background:var(--surface);
+  padding:1.5rem;
+  border-radius:16px;
+  border:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s, border-color .2s;
+}
+.stat-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+.stat-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:var(--card-accent, linear-gradient(90deg,var(--accent),var(--accent2)));
+}
+.stat-card.c1{--card-accent:linear-gradient(90deg,#4fffb0,#38bdf8)}
+.stat-card.c2{--card-accent:linear-gradient(90deg,#38bdf8,#a78bfa)}
+.stat-card.c3{--card-accent:linear-gradient(90deg,#a78bfa,#fb923c)}
+.stat-card.c4{--card-accent:linear-gradient(90deg,#f472b6,#fb923c)}
+
+.stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.stat-value{font-size:2.2rem;font-family:'Syne',sans-serif;font-weight:800;line-height:1}
+.stat-delta{font-size:.8rem;color:#4fffb0;margin-top:.4rem}
+.stat-delta.neg{color:var(--danger)}
+
+/* CHARTS GRID */
+.charts-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.5rem;
+  margin-bottom:2.5rem;
+}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+
+.chart-card{
+  background:var(--surface);
+  border-radius:18px;
+  border:1px solid var(--border);
+  padding:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.chart-card.wide{grid-column:1/-1}
+
+.chart-title{
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.95rem;
+  margin-bottom:1.2rem;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.chart-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--dot-color,var(--accent));
+  box-shadow:0 0 8px var(--dot-color,var(--accent));
+}
+
+/* INSIGHTS */
+.insights-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:1rem;
+  margin-bottom:2.5rem;
+}
+.insight-card{
+  background:var(--surface);
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:1.3rem;
+}
+.insight-card.outcome-card{
+  grid-column:1/-1;
+}
+.insight-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.6rem}
+
+.outcome-card{border-radius:18px;border:2px solid rgba(255,255,255,0.12);background:var(--surface);padding:1.5rem;display:flex;flex-direction:column;gap:.8rem;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+.outcome-lists{display:flex;gap:1rem;width:100%;align-items:stretch}
+.outcome-column{flex:1 1 0;display:flex;flex-direction:column;min-width:0;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);padding:.9rem;min-height:240px}
+.outcome-column:first-child{flex:1.1}
+.outcome-column:last-child{flex:1}
+.outcome-column.passing-column{border-color:rgba(79,255,176,0.25)}
+.outcome-column.risk-column{border-color:rgba(248,113,113,0.25)}
+.outcome-card{max-width:none}
+.outcome-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.4rem}
+.outcome-list{flex:1;overflow:auto}
+.outcome-list{background:var(--surface2);border-radius:12px;padding:.8rem;display:flex;flex-direction:column;gap:.4rem;min-height:140px;max-height:180px;overflow:auto;border:1px solid rgba(255,255,255,0.05)}
+.outcome-row{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;padding:.2rem .2rem;border-radius:8px}
+.outcome-row.pass{background:rgba(79,255,176,0.05);border:1px solid rgba(79,255,176,0.1)}
+.outcome-row.risk{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.15)}
+.outcome-row.unknown{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05)}
+.outcome-badge{padding:.1rem .5rem;border-radius:999px;font-size:.7rem;font-weight:700}
+.outcome-badge.pass{background:rgba(79,255,176,0.15);color:#4fffb0}
+.outcome-badge.risk{background:rgba(248,113,113,0.15);color:#f87171}
+.outcome-badge.unknown{background:rgba(255,255,255,0.08);color:var(--muted)}
+.outcome-meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--muted);flex-wrap:wrap;gap:.5rem}
+.outcome-meta button{margin:0}
+.upload-tabs{display:flex;gap:.6rem;flex-wrap:wrap;margin:.2rem 0 1rem}
+.upload-tab-btn{border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:var(--muted);padding:.55rem .9rem;border-radius:999px;font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s}
+.upload-tab-btn.active{color:#fff;border-color:rgba(79,255,176,0.35);background:rgba(79,255,176,0.08);box-shadow:0 0 0 1px rgba(79,255,176,0.08) inset}
+.upload-help{color:var(--muted);font-size:.84rem;margin:-.3rem 0 .8rem}
+.attendance-card{border:1px solid rgba(255,255,255,0.08);border-radius:18px;background:rgba(255,255,255,0.03);padding:1rem 1.1rem;margin-top:1.2rem}
+.attendance-card h3{margin:0 0 .35rem;font-size:1rem}
+.attendance-card p{margin:0 0 .9rem;color:var(--muted);font-size:.84rem}
+.attendance-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem}
+.attendance-form input{width:100%;padding:.78rem .9rem;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(10,14,24,0.9);color:#fff;outline:none}
+.attendance-actions{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin-top:.9rem}
+.attendance-list-row{display:flex;justify-content:space-between;gap:.7rem;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.85rem;align-items:center}
+.attendance-list-meta{text-align:right;color:var(--muted)}
+.attendance-inline-action{border:1px solid rgba(248,113,113,0.24);background:rgba(248,113,113,0.08);color:#fecaca;border-radius:999px;padding:.28rem .72rem;font-size:.74rem;font-weight:700;cursor:pointer}
+.attendance-inline-action:hover{background:rgba(248,113,113,0.14)}
+.outcome-list .performance-placeholder{margin:0;font-size:.8rem;color:var(--muted)}
+@media(max-width:860px){
+.outcome-lists{flex-direction:column}
+}
+
+.performance-tabs{
+  display:flex;
+  gap:.4rem;
+  margin-bottom:.8rem;
+}
+.performance-tabs button{
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.1);
+  padding:.3rem .8rem;
+  font-size:.75rem;
+  color:var(--muted);
+  background:transparent;
+  transition:all .2s ease;
+}
+.performance-tabs button.active{
+  color:#4fffb0;
+  border-color:rgba(79,255,176,0.4);
+  background:rgba(79,255,176,0.08);
+}
+.performance-panel{
+  display:none;
+}
+.performance-panel.active{
+  display:block;
+}
+.performance-status{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.55rem .65rem;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.05);
+  margin-bottom:.5rem;
+  font-size:.82rem;
+}
+.performance-status:last-child{
+  margin-bottom:0;
+}
+.performance-light{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-right:.4rem;
+  border:1px solid rgba(255,255,255,0.2);
+  display:inline-flex;
+}
+.performance-light.green{
+  background:#4fffb0;
+  box-shadow:0 0 8px rgba(79,255,176,0.7);
+}
+.performance-light.red{
+  background:#f87171;
+  box-shadow:0 0 8px rgba(248,113,113,0.7);
+}
+.performance-list-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:.3rem 0;
+  font-size:.82rem;
+}
+.performance-list-row:last-child{
+  border-bottom:none;
+  padding-bottom:0;
+}
+.performance-placeholder{
+  color:var(--muted);
+  font-size:.81rem;
+  padding:.5rem 0;
+}
+
+/* PROGRESS BARS */
+.progress-bar-wrap{margin-top:.5rem}
+.progress-label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
+.progress-bg{background:var(--surface2);border-radius:999px;height:7px;overflow:hidden}
+.progress-fill{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* TABLE */
+.table-wrapper{
+  background:var(--surface);
+  border-radius:16px;
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.table-toolbar{
+  padding:1rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+table{width:100%;border-collapse:collapse}
+th,td{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);text-align:left;font-size:.875rem}
+th{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;background:var(--surface2)}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--surface2)}
+tbody tr:last-child td{border-bottom:none}
+.badge{
+  display:inline-block;
+  padding:.2rem .6rem;
+  border-radius:6px;
+  font-size:.72rem;
+  font-weight:600;
+}
+.badge.pass{background:rgba(79,255,176,.12);color:#4fffb0}
+.badge.fail{background:rgba(248,113,113,.12);color:#f87171}
+.badge.avg{background:rgba(251,146,60,.12);color:#fb923c}
+
+.hidden{display:none}
+
+/* upload section */
+.upload-area{
+  border:2px dashed var(--border);
+  border-radius:14px;
+  padding:2rem;
+  text-align:center;
+  transition:border-color .2s;
+  cursor:pointer;
+}
+.upload-area:hover{border-color:rgba(79,255,176,.3)}
+.upload-area input{display:none}
+
+/* Fade-in animation */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.anim{animation:fadeUp .5s ease forwards;opacity:0}
+.anim:nth-child(1){animation-delay:.05s}
+.anim:nth-child(2){animation-delay:.1s}
+.anim:nth-child(3){animation-delay:.15s}
+.anim:nth-child(4){animation-delay:.2s}
+.anim:nth-child(5){animation-delay:.25s}
+.anim:nth-child(6){animation-delay:.3s}
+
+/* Radial gauge */
+.gauge-wrap{display:flex;justify-content:center;margin:1rem 0 .5rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <h1>EduPredict</h1>
+  </div>
+  <nav>
+    <button id="login-btn" class="btn-ghost">Login</button>
+    <button id="register-btn" class="btn-primary">New User</button>
+    <button id="dashboard-btn" class="btn-ghost hidden">Dashboard</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- LOGIN -->
+  <div id="login-form" class="form-container">
+    <div class="form-card">
+      <h2>Welcome back 👋</h2>
+      <form id="login">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <div class="field-hint">Use a valid email like <code>name@example.com</code>.</div>
+        <input type="password" id="login-password" placeholder="Password" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}" title="Password must be at least 8 characters and include at least 1 letter and 1 number." required>
+        <div class="field-hint">Password must be at least 8 characters and include at least 1 letter and 1 number.</div>
+        <button type="submit" class="btn-primary">Login</button>
+        <div id="login-error" class="performance-placeholder" style="color:#f87171;font-size:.82rem;min-height:1.2rem;margin-top:.4rem"></div>
+        <div class="auth-actions">
+          <button type="button" class="btn-ghost" id="forgot-password-toggle">Forgot Password</button>
+          <button type="button" class="btn-ghost" id="jump-to-register">New User</button>
+        </div>
+        <div class="auth-note">
+          <span>Need admin access?</span>
+          <a href="/admin.html" class="btn-ghost note-btn" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center">Admin Panel</a>
+        </div>
+      </form>
+      <div id="forgot-password-panel" class="inline-panel hidden">
+        <h3>Reset Password</h3>
+        <p>Enter your registered email and choose a new password using the same format rule.</p>
+        <form id="forgot-password-form">
+          <input type="email" id="forgot-email" placeholder="Registered email" required>
+          <input type="password" id="forgot-password" placeholder="New password" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}" title="Password must be at least 8 characters and include at least 1 letter and 1 number." required>
+          <div class="field-hint">Password format: minimum 8 characters with letters and numbers.</div>
+          <button type="submit" class="btn-primary">Update Password</button>
+          <div id="forgot-password-message" class="performance-placeholder" style="min-height:1.2rem;margin-top:.2rem"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="register-form" class="form-container hidden">
+    <div class="form-card">
+      <h2>Create account</h2>
+      <form id="register">
+        <input type="text" id="register-name" placeholder="Full name" required>
+        <div class="field-hint">Enter the name you want displayed after login.</div>
+        <input type="email" id="register-email" placeholder="Email" required>
+        <div class="field-hint">Email format: <code>name@example.com</code></div>
+        <input type="password" id="register-password" placeholder="Password" minlength="8" pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}" title="Password must be at least 8 characters and include at least 1 letter and 1 number." required>
+        <div class="field-hint">Password format: minimum 8 characters with at least 1 letter and 1 number.</div>
+        <button type="submit" class="btn-primary">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden">
+
+    <div class="dash-header anim">
+      <div>
+        <div class="dash-title" id="welcome-msg">Hello, Teacher 👋</div>
+        <div class="dash-subtitle">Here's what's happening in your classroom today.</div>
+      </div>
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <button id="exportPDF" class="btn-accent2">⬇ Export Report</button>
+        <button id="logout-btn" class="btn-danger">Logout</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="stats"></div>
+
+    <div class="attendance-card anim">
+      <h3>Update Daily Attendance</h3>
+      <p>Use one box for RFID-based daily attendance and another for manual updates. One unique card scan per hour counts as one lecture attendance for that student.</p>
+      <div class="attendance-form" style="margin-bottom:.8rem">
+        <input id="total-lectures-value" type="number" min="0" step="1" placeholder="Total lectures taken">
+        <button id="total-lectures-btn" class="btn-accent2" type="button">Save Total Lectures</button>
+      </div>
+      <div id="attendance-summary" style="color:var(--muted);font-size:.85rem;margin-bottom:.9rem"></div>
+      <div class="attendance-card" style="margin-top:.8rem;padding:.9rem">
+        <h3 style="margin-bottom:.4rem">Daily Attendance By RFID</h3>
+        <p style="margin-bottom:.8rem">Link cards once, then each scan appears here with the matched student name.</p>
+        <div class="attendance-form">
+          <input id="rfid-link-value" type="text" placeholder="RFID UID">
+          <input id="rfid-link-student" type="text" list="student-options" placeholder="Link RFID to student">
+        </div>
+        <div class="attendance-actions">
+          <button id="rfid-link-btn" class="btn-accent2" type="button">Link RFID</button>
+          <button id="rfid-reset-all-btn" class="attendance-inline-action" type="button">Reset Full List</button>
+          <span id="rfid-link-status" style="color:var(--muted);font-size:.85rem"></span>
+        </div>
+        <div id="rfid-last-scan" style="color:var(--muted);font-size:.85rem;margin-top:.85rem"></div>
+        <div id="rfid-lecture-status" style="margin-top:.85rem"></div>
+        <div id="rfid-scan-list" style="margin-top:.85rem"></div>
+      </div>
+      <div class="attendance-card" style="margin-top:1rem;padding:.9rem">
+        <h3 style="margin-bottom:.4rem">Manual Attendance Update</h3>
+        <p style="margin-bottom:.8rem">Pick a student from the list and update attendance manually when needed.</p>
+      <div class="attendance-form" style="margin-bottom:.8rem">
+        <input id="attendance-student-search" type="text" list="student-options" placeholder="Search student name or ID">
+        <datalist id="student-options"></datalist>
+      </div>
+      <div class="attendance-form">
+        <input id="attendance-student-id" type="text" placeholder="Student ID or Roll No">
+        <input id="attendance-student-name" type="text" placeholder="Student Name">
+        <input id="attendance-value" type="number" min="0" max="100" step="0.01" placeholder="Attendance %">
+      </div>
+      <div class="attendance-actions">
+        <button id="attendance-update-btn" class="btn-accent2">Update Attendance</button>
+        <span id="attendance-status" style="color:var(--muted);font-size:.85rem"></span>
+      </div>
+      </div>
+    </div>
+
+    <!-- TEACHER INSIGHTS -->
+    <p class="section-title">Teacher Insights</p>
+    <div class="insights-grid anim">
+
+      <div class="insight-card">
+        <div class="insight-label"> Top Performers</div>
+        <div id="top-students">Loading...</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-label"> Low Performers</div>
+        <div id="risk-students">Loading...</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-label">Lowest Attendance</div>
+        <div id="attendance-risk">Loading...</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-label"> Subject Completion</div>
+        <div class="progress-bar-wrap" id="subject-progress">
+          <div class="performance-placeholder">Loading subject progress…</div>
+        </div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-label">⚡ AI Performance</div>
+        <div class="performance-tabs">
+          <button class="performance-tab-btn active" data-panel-target="summary">Summary</button>
+          <button class="performance-tab-btn" data-panel-target="details">Predictions</button>
+        </div>
+        <div class="performance-panel active" data-panel-content="summary">
+          <div class="performance-status">
+            <div><span class="performance-light green"></span>Predicted Pass</div>
+            <strong id="perf-pass-count">0</strong>
+          </div>
+          <div class="performance-status">
+            <div><span class="performance-light red"></span>Predicted Fail</div>
+            <strong id="perf-fail-count">0</strong>
+          </div>
+          <div class="performance-status">
+            <span>Confidence</span>
+            <strong id="perf-confidence">n/a</strong>
+          </div>
+        </div>
+        <div class="performance-panel" data-panel-content="details">
+          <div id="perf-list" class="performance-list">
+            <div class="performance-placeholder">Upload or reload to see AI predictions.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-card outcome-card">
+        <div class="insight-label">Student Outcomes</div>
+        <div class="outcome-lists">
+          <div class="outcome-column passing-column">
+            <div class="outcome-title">Passing Students</div>
+            <div id="passing-list" class="outcome-list">
+              <div class="performance-placeholder">Loading...</div>
+            </div>
+          </div>
+          <div class="outcome-column risk-column">
+            <div class="outcome-title">Students At Risk</div>
+            <div id="at-risk-list" class="outcome-list">
+              <div class="performance-placeholder">Loading...</div>
+            </div>
+          </div>
+        </div>
+        <div class="outcome-meta">
+          <span id="status">Click reload to refresh lists</span>
+          <button id="refresh" class="btn-ghost">↺ Reload</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CHARTS -->
+    <p class="section-title">Performance Analytics</p>
+    <div class="charts-grid">
+
+      <div class="chart-card wide anim">
+        <div class="chart-title">
+          <span class="chart-dot" style="--dot-color:#4fffb0"></span>
+          Monthly Score Trend
+        </div>
+        <canvas id="trendChart" height="90"></canvas>
+      </div>
+
+      <div class="chart-card anim">
+        <div class="chart-title">
+          <span class="chart-dot" style="--dot-color:#a78bfa"></span>
+          Score Distribution
+        </div>
+        <canvas id="distChart" height="200"></canvas>
+      </div>
+
+      <div class="chart-card anim">
+        <div class="chart-title">
+          <span class="chart-dot" style="--dot-color:#38bdf8"></span>
+          Subject Performance
+        </div>
+        <canvas id="subjectChart" height="200"></canvas>
+      </div>
+
+      <div class="chart-card anim">
+        <div class="chart-title">
+          <span class="chart-dot" style="--dot-color:#fb923c"></span>
+          Grade Breakdown
+        </div>
+        <canvas id="gradeDonut" height="200"></canvas>
+      </div>
+
+      <div class="chart-card anim">
+        <div class="chart-title">
+          <span class="chart-dot" style="--dot-color:#f472b6"></span>
+          Attendance vs Score
+        </div>
+        <canvas id="scatterChart" height="200"></canvas>
+      </div>
+
+    </div>
+
+    <!-- UPLOAD -->
+    <p class="section-title">Upload Student Data</p>
+    <div class="upload-tabs anim">
+      <button type="button" class="upload-tab-btn active" data-upload-mode="combined">Combined File</button>
+      <button type="button" class="upload-tab-btn" data-upload-mode="result">Result Only</button>
+    </div>
+    <div id="upload-help" class="upload-help">Upload one PDF/CSV that already contains both result and attendance, if available.</div>
+    <label class="upload-area anim">
+      <input type="file" id="csv-file" accept=".csv,.pdf,application/pdf,text/csv">
+      <div style="font-size:2rem;margin-bottom:.5rem">📂</div>
+      <div id="upload-title" style="font-weight:600">Drop CSV or PDF here or click to browse</div>
+      <div id="upload-subtitle" style="color:var(--muted);font-size:.85rem;margin-top:.3rem">Accepts .csv and table-based .pdf files</div>
+    </label>
+    <div style="margin-top:.8rem;display:flex;gap:.8rem;align-items:center">
+      <button id="upload-btn" class="btn-primary">Upload Combined File</button>
+      <span id="upload-status" style="color:var(--muted);font-size:.85rem"></span>
+    </div>
+
+    <p class="section-title" style="margin-top:2.2rem">Administration</p>
+    <div class="admin-card anim">
+      <h3>Admin controls moved to a separate page</h3>
+      <p>Open the dedicated admin panel to log in as admin, edit user accounts, and delete users without mixing those tools into the teacher dashboard.</p>
+      <div class="admin-actions">
+        <a href="/admin.html" class="btn-accent2" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center">Open Admin Panel</a>
+      </div>
+    </div>
+
+    <br>
+
+  </div><!-- end dashboard -->
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+const API = "http://127.0.0.1:8000";
+// ─── SAMPLE DATA ──────────────────────────────────────────
+const SAMPLE_STUDENTS = [
+  {id:1,name:"Alice Chen",email:"alice@school.edu",score:94,attendance:96,grade:"A",subject:"Math"},
+  {id:2,name:"Bob Martinez",email:"bob@school.edu",score:62,attendance:71,grade:"D",subject:"Science"},
+  {id:3,name:"Clara Smith",email:"clara@school.edu",score:88,attendance:90,grade:"B",subject:"English"},
+  {id:4,name:"David Kim",email:"david@school.edu",score:45,attendance:55,grade:"F",subject:"History"},
+  {id:5,name:"Eva Brown",email:"eva@school.edu",score:77,attendance:83,grade:"C",subject:"Math"},
+  {id:6,name:"Frank Lee",email:"frank@school.edu",score:91,attendance:97,grade:"A",subject:"Science"},
+  {id:7,name:"Grace Wu",email:"grace@school.edu",score:83,attendance:88,grade:"B",subject:"English"},
+  {id:8,name:"Henry Patel",email:"henry@school.edu",score:58,attendance:66,grade:"D",subject:"Math"},
+  {id:9,name:"Iris Johansson",email:"iris@school.edu",score:72,attendance:79,grade:"C",subject:"History"},
+  {id:10,name:"James Nguyen",email:"james@school.edu",score:97,attendance:99,grade:"A",subject:"Science"},
+];
+
+const FIELD_ALIASES = {
+  name: ["name","student_name","full_name","student","learner_name","candidate_name"],
+  score: ["final_score","score","total_score","total","average_score","avg_score","overall_score","overall","aggregate","marks","mark","percentage","percent","cgpa","sgpa","gpa","final_exam_score","obtained_marks"],
+  attendance: ["attendance","attendance_rate","avg_attendance","attended","attendance_percent","attendance_pct","present_percentage"],
+  grade: ["grade","letter_grade","result","final_grade","status","remark"],
+  prediction: ["ai_prediction","AI_Prediction","ai_target","AI_Target","prediction","pass_prediction","is_passing","ML_prediction","ai_prediction_label"],
+  email: ["email","student_email"],
+  id: ["student_id","id","roll","roll_number","registration_number","enrollment_number"],
+  subject: ["subject","course","discipline","class_name","department","branch"],
+};
+
+const NON_PERFORMANCE_KEYS = [
+  "income","salary","job","occupation","profession","age","gender",
+  "social","social_media","socialmedia","internet","internet_usage",
+  "sports","hobby","family","study_hours","studyhours","sleep_hours",
+  "sleephours","extra_classes","extraclasses"
+];
+
+function normalizeKey(key){
+  if(!key) return "";
+  return key.toString().toLowerCase().replace(/[^a-z0-9]/g,"");
+}
+
+function isNumericValue(value){
+  if(value === undefined || value === null || value === "") return false;
+  const num = Number(value);
+  return Number.isFinite(num);
+}
+
+function toNumber(value){
+  if(isNumericValue(value)) return Number(value);
+  return null;
+}
+
+function getNumericSeries(records, key){
+  return records.map(record=>toNumber(record?.[key])).filter(value=>value!==null);
+}
+
+function isLikelyIdentifierKey(key){
+  const token = normalizeKey(key);
+  return ["id","studentid","roll","rollnumber","registration","registrationnumber","enrollment","enrollmentnumber","phone","mobile"].includes(token);
+}
+
+function isNonPerformanceKey(key){
+  const token = normalizeKey(key);
+  return NON_PERFORMANCE_KEYS.some(item => token.includes(normalizeKey(item)));
+}
+
+function scoreNumericKey(records, key, preferredAliases = []){
+  const values = getNumericSeries(records, key);
+  if(!values.length) return Number.NEGATIVE_INFINITY;
+
+  const token = normalizeKey(key);
+  const mean = values.reduce((a,b)=>a+b,0) / values.length;
+  const max = Math.max(...values);
+  const uniqueCount = new Set(values).size;
+  const withinPercentRange = values.filter(value=>value>=0 && value<=100).length / values.length;
+  let score = 0;
+
+  if(preferredAliases.some(alias=>token === normalizeKey(alias))) score += 8;
+  if(preferredAliases.some(alias=>token.includes(normalizeKey(alias)))) score += 5;
+  if(["total","overall","aggregate","percentage","percent","final"].some(part=>token.includes(part))) score += 4;
+  if(withinPercentRange >= 0.8) score += 4;
+  if(max > 100) score += 3;
+  if(uniqueCount >= Math.min(6, values.length)) score += 2;
+  if(mean >= 20 && mean <= 100) score += 2;
+  if(isLikelyIdentifierKey(key)) score -= 10;
+  if(isNonPerformanceKey(key)) score -= 12;
+  if(token.includes("prediction")) score -= 6;
+  if(token.includes("attendance")) score -= 4;
+  if(token.includes("column")) score -= 2;
+
+  return score;
+}
+
+function pickBestNumericKey(records, preferredAliases = [], excludedKeys = []){
+  if(!records?.length) return null;
+
+  const firstRow = records.find(Boolean);
+  if(!firstRow) return null;
+
+  const excludeSet = new Set((excludedKeys || []).filter(Boolean));
+  const ranked = Object.keys(firstRow)
+    .filter(key=>!excludeSet.has(key) && !isNonPerformanceKey(key))
+    .map(key=>({key, score: scoreNumericKey(records, key, preferredAliases)}))
+    .filter(entry=>Number.isFinite(entry.score))
+    .sort((a,b)=>b.score-a.score);
+
+  return ranked.length && ranked[0].score > -1 ? ranked[0].key : null;
+}
+
+function findKey(record, candidates, numericOnly = false){
+  if(!record) return null;
+  const keys = Object.keys(record);
+  const normalizedCandidates = candidates.map(c => normalizeKey(c));
+
+  for(const candidate of normalizedCandidates){
+    const match = keys.find(key => normalizeKey(key) === candidate && (!numericOnly || isNumericValue(record[key])));
+    if(match) return match;
+  }
+
+  for(const candidate of normalizedCandidates){
+    const match = keys.find(key => normalizeKey(key).includes(candidate) && (!numericOnly || isNumericValue(record[key])));
+    if(match) return match;
+  }
+
+  if(numericOnly){
+    const fallback = keys.find(key => isNumericValue(record[key]));
+    return fallback || null;
+  }
+
+  return null;
+}
+
+function findKeyInRecords(records, candidates, numericOnly = false){
+  const source = Array.isArray(records) ? records : [records];
+  for(const record of source){
+    const key = findKey(record, candidates, numericOnly);
+    if(key) return key;
+  }
+  return null;
+}
+
+function inferBestNameKey(records){
+  if(!records?.length) return null;
+  const firstRow = records.find(Boolean);
+  if(!firstRow) return null;
+
+  const ranked = Object.keys(firstRow).map(key=>{
+    const token = normalizeKey(key);
+    const values = records.map(record=>record?.[key]).filter(value=>value !== undefined && value !== null && String(value).trim() !== "");
+    if(!values.length) return null;
+    const nonNumericValues = values.filter(value=>!isNumericValue(value));
+    if(!nonNumericValues.length) return null;
+
+    const uniqueCount = new Set(nonNumericValues.map(value=>String(value).trim())).size;
+    const uniqueRatio = uniqueCount / nonNumericValues.length;
+    const avgLength = nonNumericValues.reduce((sum, value)=>sum + String(value).trim().length, 0) / nonNumericValues.length;
+
+    let score = 0;
+    if(FIELD_ALIASES.name.some(alias=>token.includes(normalizeKey(alias)))) score += 10;
+    if(uniqueRatio >= 0.5) score += 4;
+    if(avgLength >= 4 && avgLength <= 40) score += 3;
+    if(isLikelyIdentifierKey(key)) score -= 4;
+    if(isNonPerformanceKey(key)) score -= 6;
+    if(FIELD_ALIASES.grade.some(alias=>token.includes(normalizeKey(alias)))) score -= 5;
+
+    return score > 0 ? {key, score, uniqueRatio, avgLength} : null;
+  }).filter(Boolean).sort((a,b)=>b.score-a.score || b.uniqueRatio-a.uniqueRatio || b.avgLength-a.avgLength);
+
+  return ranked.length ? ranked[0].key : null;
+}
+
+function createMeta(recordOrRecords, schema = {}){
+  const records = Array.isArray(recordOrRecords) ? recordOrRecords : [recordOrRecords];
+  const predictionKey = schema.prediction_key
+    || (records.length && Object.prototype.hasOwnProperty.call(records[0], 'AI_Target') ? 'AI_Target' : null)
+    || findKeyInRecords(records, FIELD_ALIASES.prediction);
+  const attendanceKey = schema.attendance_key
+    || findKeyInRecords(records, FIELD_ALIASES.attendance, true);
+  const scoreKey = schema.score_key
+    || findKeyInRecords(records, FIELD_ALIASES.score, true)
+    || pickBestNumericKey(records, FIELD_ALIASES.score, [predictionKey, attendanceKey]);
+
+  return {
+    nameKey: schema.name_key || findKeyInRecords(records, FIELD_ALIASES.name) || inferBestNameKey(records),
+    emailKey: findKeyInRecords(records, FIELD_ALIASES.email),
+    idKey: schema.id_key || findKeyInRecords(records, FIELD_ALIASES.id),
+    scoreKey,
+    attendanceKey,
+    gradeKey: schema.grade_key || findKeyInRecords(records, FIELD_ALIASES.grade),
+    subjectKey: schema.subject_key || findKeyInRecords(records, FIELD_ALIASES.subject),
+    subjectColumns: Array.isArray(schema.subject_columns) ? schema.subject_columns : [],
+    hasAttendance: schema.has_attendance ?? Boolean(attendanceKey),
+    predictionKey,
+  };
+}
+
+function humanizeLabel(label){
+  if(!label) return 'Subject';
+  return String(label)
+    .replace(/[_-]?\d+$/g,'')
+    .replace(/[_-]?%$/g,'')
+    .replace(/\btotal\b/ig,'')
+    .replace(/[_-]+/g,' ')
+    .replace(/([a-z])([A-Z])/g,'$1 $2')
+    .replace(/\s{2,}/g,' ')
+    .replace(/\b\w/g,m=>m.toUpperCase())
+    .trim();
+}
+
+function formatStudentName(student, idx, meta){
+  const nameKey = meta?.nameKey;
+  const emailKey = meta?.emailKey;
+  const idKey = meta?.idKey;
+
+  if(nameKey && student[nameKey]){
+    const nameValue = String(student[nameKey]).trim();
+    const normalized = normalizeKey(nameValue);
+    if(nameValue && !["nameofstudent","studentname","maximummarks","maximum","remark","result"].includes(normalized)){
+      return nameValue;
+    }
+  }
+  if(emailKey && student[emailKey]){
+    const emailValue = String(student[emailKey]);
+    return emailValue.split("@")[0];
+  }
+  if(idKey && student[idKey]) return String(student[idKey]);
+
+  return `Student ${idx+1}`;
+}
+
+let currentMeta = createMeta(SAMPLE_STUDENTS);
+let currentSchema = {};
+
+// ─── CHART DEFAULTS ───────────────────────────────────────
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+const chartInstances = {};
+
+function destroyChart(id){
+  if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id]}
+}
+
+function resetCharts(){
+  Object.keys(chartInstances).forEach(id=>destroyChart(id));
+}
+
+// ─── CHART BUILDERS ───────────────────────────────────────
+
+function buildTrendChart(){
+  destroyChart('trend');
+  const ctx = document.getElementById('trendChart');
+  chartInstances['trend'] = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'],
+      datasets:[
+        {
+          label:'Class Avg Score',
+          data:[68,72,69,75,78,74,80,82,79],
+          backgroundColor:'rgba(79,255,176,0.15)',
+          borderColor:'#4fffb0',
+          borderWidth:2,
+          borderRadius:6,
+          borderSkipped:false,
+        },
+        {
+          label:'Top Score',
+          data:[88,92,90,95,97,93,96,98,97],
+          type:'line',
+          tension:.4,
+          borderColor:'#38bdf8',
+          backgroundColor:'rgba(56,189,248,0.08)',
+          pointBackgroundColor:'#38bdf8',
+          pointRadius:4,
+          fill:true,
+          borderWidth:2,
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{usePointStyle:true,pointStyle:'circle',padding:16,color:'#9ca3af'}},
+        tooltip:{
+          backgroundColor:'#0e1320',
+          borderColor:'rgba(255,255,255,0.1)',
+          borderWidth:1,
+          padding:12,
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#6b7280'}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},min:50,max:100}
+      }
+    }
+  });
+}
+
+function buildDistChart(students, meta){
+  destroyChart('dist');
+  const ctx = document.getElementById('distChart');
+  const scoreKey = meta?.scoreKey || 'score';
+  const buckets = [0,0,0,0,0]; // <60, 60-69, 70-79, 80-89, 90+
+  students.forEach(s=>{
+    const sc = toNumber(s[scoreKey]);
+    if(sc === null) return;
+    if(sc<60) buckets[0]++;
+    else if(sc<70) buckets[1]++;
+    else if(sc<80) buckets[2]++;
+    else if(sc<90) buckets[3]++;
+    else buckets[4]++;
+  });
+  chartInstances['dist'] = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['<60','60–69','70–79','80–89','90+'],
+      datasets:[{
+        label:'Students',
+        data:buckets,
+        backgroundColor:[
+          'rgba(248,113,113,0.7)',
+          'rgba(251,146,60,0.7)',
+          'rgba(250,204,21,0.7)',
+          'rgba(56,189,248,0.7)',
+          'rgba(79,255,176,0.7)',
+        ],
+        borderRadius:8,
+        borderSkipped:false,
+        borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0e1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#6b7280'}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280',stepSize:1},beginAtZero:true}
+      }
+    }
+  });
+}
+
+function buildSubjectChart(students, meta){
+  destroyChart('subject');
+  const ctx = document.getElementById('subjectChart');
+  const subjectKey = meta?.subjectKey || 'subject';
+  const scoreKey = meta?.scoreKey || 'score';
+
+  if(Array.isArray(meta?.subjectColumns) && meta.subjectColumns.length){
+    const subjectColumns = meta.subjectColumns.filter(key=>!isNonPerformanceKey(key));
+    const labels = subjectColumns.map(humanizeLabel);
+    const avgs = subjectColumns.map(key=>{
+      const values = students.map(student=>toNumber(student[key])).filter(value=>value!==null);
+      if(!values.length) return 0;
+      return Math.round(values.reduce((a,b)=>a+b,0) / values.length);
+    });
+    if(!subjectColumns.length){
+      return;
+    }
+    const colors = ['rgba(79,255,176,0.7)','rgba(56,189,248,0.7)','rgba(167,139,250,0.7)','rgba(251,146,60,0.7)','rgba(244,114,182,0.7)'];
+    chartInstances['subject'] = new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{label:'Avg Marks',data:avgs,backgroundColor:labels.map((_,i)=>colors[i%colors.length]),borderRadius:8,borderSkipped:false,borderWidth:0}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#0e1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},beginAtZero:true},y:{grid:{display:false},ticks:{color:'#9ca3af'}}}}
+    });
+    return;
+  }
+
+  const subjects = {};
+  students.forEach(s=>{
+    const value = toNumber(s[scoreKey]);
+    if(value === null) return;
+    const label = s[subjectKey] || 'Subject';
+    if(!subjects[label]) subjects[label]={total:0,count:0};
+    subjects[label].total+=value;
+    subjects[label].count++;
+  });
+  let labels = Object.keys(subjects);
+  if(!labels.length){
+    labels = ['Subject'];
+    subjects['Subject']={total:0,count:1};
+  }
+  const avgs = labels.map(l=>Math.round(subjects[l].total/subjects[l].count));
+  const colors = ['rgba(79,255,176,0.7)','rgba(56,189,248,0.7)','rgba(167,139,250,0.7)','rgba(251,146,60,0.7)','rgba(244,114,182,0.7)'];
+  chartInstances['subject'] = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Avg Score',
+        data:avgs,
+        backgroundColor:colors.slice(0,labels.length),
+        borderRadius:8,
+        borderSkipped:false,
+        borderWidth:0,
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0e1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},min:0,max:100},
+        y:{grid:{display:false},ticks:{color:'#9ca3af'}}
+      }
+    }
+  });
+}
+
+function buildGradeDonut(students, meta){
+  destroyChart('grade');
+  const ctx = document.getElementById('gradeDonut');
+  const gradeKey = meta?.gradeKey;
+  const scoreKey = meta?.scoreKey;
+  const counts = {A:0,B:0,C:0,D:0,F:0,Unknown:0};
+  const normalizeGrade = gradeValue=>{
+    if(!gradeValue) return null;
+    const normalized = String(gradeValue).trim().toUpperCase();
+    if(['A','B','C','D','F'].includes(normalized)) return normalized;
+    return null;
+  };
+  const deriveFromScore = score=>{
+    if(score === null) return null;
+    if(score>=90) return 'A';
+    if(score>=80) return 'B';
+    if(score>=70) return 'C';
+    if(score>=60) return 'D';
+    return 'F';
+  };
+  students.forEach(s=>{
+    const rawGrade = gradeKey ? normalizeGrade(s[gradeKey]) : null;
+    const gradeLabel = rawGrade || deriveFromScore(scoreKey ? toNumber(s[scoreKey]) : null) || 'Unknown';
+    if(counts[gradeLabel]!==undefined){
+      counts[gradeLabel]++;
+    }else{
+      counts.Unknown++;
+    }
+  });
+  let labels = Object.keys(counts).filter(key=>counts[key]>0);
+  if(!labels.length){
+    counts['No Grades']=1;
+    labels = ['No Grades'];
+  }
+  const colors = [
+    'rgba(79,255,176,0.85)',
+    'rgba(56,189,248,0.85)',
+    'rgba(250,204,21,0.85)',
+    'rgba(251,146,60,0.85)',
+    'rgba(248,113,113,0.85)',
+    'rgba(167,139,250,0.85)',
+  ];
+  chartInstances['grade'] = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels,
+      datasets:[{
+        data:labels.map(key=>counts[key]),
+        backgroundColor:[
+          ...colors.slice(0, labels.length),
+        ],
+        borderColor:'#0e1320',
+        borderWidth:3,
+        hoverOffset:6,
+      }]
+    },
+    options:{
+      responsive:true,
+      cutout:'65%',
+      plugins:{
+        legend:{
+          position:'right',
+          labels:{usePointStyle:true,pointStyle:'circle',padding:12,color:'#9ca3af'}
+        },
+        tooltip:{backgroundColor:'#0e1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1}
+      }
+    }
+  });
+}
+
+function buildScatterChart(students, meta){
+  destroyChart('scatter');
+  const ctx = document.getElementById('scatterChart');
+  chartInstances['scatter'] = new Chart(ctx,{
+    type:'scatter',
+    data:{
+      datasets:[{
+        label:'Students',
+        data:students.map((s,i)=>{
+          const attendance = toNumber(s[meta?.attendanceKey || 'attendance']);
+          const score = toNumber(s[meta?.scoreKey || 'score']);
+          if(attendance === null || score === null) return null;
+          return {x:attendance,y:score,label:formatStudentName(s,i,meta)};
+        }).filter(Boolean),
+        backgroundColor:'rgba(167,139,250,0.65)',
+        pointRadius:7,
+        pointHoverRadius:9,
+        borderColor:'rgba(167,139,250,0.9)',
+        borderWidth:1,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0e1320',
+          borderColor:'rgba(255,255,255,.1)',
+          borderWidth:1,
+          callbacks:{
+            label:ctx=>`${ctx.raw.label}: Att ${ctx.raw.x}% | Score ${ctx.raw.y}`
+          }
+        }
+      },
+      scales:{
+        x:{title:{display:true,text:'Attendance %',color:'#6b7280'},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},min:40,max:105},
+        y:{title:{display:true,text:'Score',color:'#6b7280'},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},min:30,max:105}
+      }
+    }
+  });
+}
+
+// ─── DASHBOARD RENDER ─────────────────────────────────────
+
+function renderDashboard(students){
+  const statsEl = document.getElementById('stats');
+  const meta = createMeta(students, currentSchema);
+  const usableStudents = students.filter((student, idx)=>isRenderableStudent(student, meta, idx));
+
+  if(!usableStudents.length){
+    resetCharts();
+    statsEl.innerHTML = `
+      <div class="stat-card c1 anim">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value">0</div>
+        <div class="stat-delta">No data yet</div>
+      </div>
+      <div class="stat-card c2 anim">
+        <div class="stat-label">Class Average</div>
+        <div class="stat-value">n/a</div>
+        <div class="stat-delta">Score data pending</div>
+      </div>
+      <div class="stat-card c3 anim">
+        <div class="stat-label">Pass Rate</div>
+        <div class="stat-value">n/a</div>
+        <div class="stat-delta">No completion</div>
+      </div>
+      <div class="stat-card c4 anim">
+        <div class="stat-label">Avg Attendance</div>
+        <div class="stat-value">n/a</div>
+        <div class="stat-delta">Attendance data pending</div>
+      </div>
+    `;
+  document.getElementById('top-students').innerHTML = '<div class="performance-placeholder">Awaiting data</div>';
+  document.getElementById('risk-students').innerHTML = '<div class="performance-placeholder">Awaiting data</div>';
+  document.getElementById('attendance-risk').innerHTML = '<div class="performance-placeholder">Awaiting data</div>';
+  renderPerformancePanel([], {});
+  renderOutcomeLists([], {});
+  renderSubjectProgress([], {});
+  return;
+}
+
+  currentMeta = meta;
+  const scoreVals = usableStudents.map(s=>toNumber(s[meta.scoreKey])).filter(v=>v!==null);
+  const attendanceVals = meta.attendanceKey ? usableStudents.map(s=>toNumber(s[meta.attendanceKey])).filter(v=>v!==null) : [];
+  const performance = summarizePerformance(usableStudents, meta);
+  const validScoreCount = scoreVals.length;
+  const avgScore = validScoreCount ? Math.round(scoreVals.reduce((a,b)=>a+b,0)/validScoreCount) : null;
+  const passCount = performance.passCount;
+  const passRate = performance.passRate;
+  const avgAttendance = attendanceVals.length ? Math.round(attendanceVals.reduce((a,b)=>a+b,0)/attendanceVals.length) : null;
+
+  const avgScoreDisplay = avgScore !== null ? avgScore : 'n/a';
+  const passRateDisplay = passRate !== null ? passRate : 'n/a';
+  const avgAttendanceDisplay = avgAttendance !== null ? avgAttendance : 'n/a';
+  const avgDeltaText = avgScore !== null ? (avgScore>=75?' Above target':' Below target') : 'Score data pending';
+  const attendanceDeltaClass = avgAttendance !== null && avgAttendance < 75 ? 'stat-delta neg' : 'stat-delta';
+  const attendanceDeltaText = avgAttendance !== null ? (avgAttendance>=75? 'Good attendance':' Low attendance') : 'Attendance data pending';
+  const passDetail = performance.knownCount ? `${passCount} of ${performance.knownCount} passing` : 'Prediction data pending';
+
+  statsEl.innerHTML = `
+    <div class="stat-card c1 anim">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value">${usableStudents.length}</div>
+      <div class="stat-delta">↑ Active roster</div>
+    </div>
+    <div class="stat-card c2 anim">
+      <div class="stat-label">Class Average</div>
+      <div class="stat-value">${avgScoreDisplay}<span style="font-size:1rem;color:var(--muted)">%</span></div>
+      <div class="stat-delta">${avgDeltaText}</div>
+    </div>
+    <div class="stat-card c3 anim">
+      <div class="stat-label">Pass Rate</div>
+      <div class="stat-value">${passRateDisplay}<span style="font-size:1rem;color:var(--muted)">%</span></div>
+      <div class="stat-delta">${passDetail}</div>
+    </div>
+    <div class="stat-card c4 anim">
+      <div class="stat-label">Avg Attendance</div>
+      <div class="stat-value">${avgAttendanceDisplay}${avgAttendance !== null ? '<span style="font-size:1rem;color:var(--muted)">%</span>' : ''}</div>
+      <div class="${attendanceDeltaClass}">${attendanceDeltaText}</div>
+    </div>
+  `;
+
+  const annotated = usableStudents.map((student,idx)=>{
+    const scoreValue = toNumber(student[meta.scoreKey]);
+    const attendanceValue = meta.attendanceKey ? toNumber(student[meta.attendanceKey]) : null;
+    const passStatus = determinePassStatus(student, meta);
+    return {
+      name: formatStudentName(student,idx,meta),
+      score: scoreValue !== null ? scoreValue : -Infinity,
+      scoreLabel: scoreValue !== null ? scoreValue : 'n/a',
+      attendance: attendanceValue,
+      passStatus,
+    };
+  });
+  const sortedByScore = [...annotated].sort((a,b)=>b.score-a.score);
+  const topItems = sortedByScore.slice(0,3);
+  document.getElementById('top-students').innerHTML = topItems.length ? topItems.map(item=>
+    `<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.85rem">
+       <span>${item.name}</span><span style="color:#4fffb0;font-weight:700">${item.scoreLabel}</span>
+     </div>`
+  ).join('') : '<div class="performance-placeholder">Awaiting data</div>';
+
+  const lowPerformerItems = annotated
+    .filter(item=>Number.isFinite(item.score))
+    .sort((a,b)=>a.score-b.score)
+    .slice(0,3);
+  document.getElementById('risk-students').innerHTML = lowPerformerItems.length ? lowPerformerItems.map(item=>
+    `<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.85rem">
+       <span>${item.name}</span><span style="color:#f87171;font-weight:700">${item.scoreLabel}</span>
+     </div>`
+  ).join('') : '<div class="performance-placeholder">Score data missing</div>';
+
+  const attendanceSorted = [...annotated].sort((a,b)=>{
+    const aVal = a.attendance === null || a.attendance === undefined ? 999 : a.attendance;
+    const bVal = b.attendance === null || b.attendance === undefined ? 999 : b.attendance;
+    return aVal - bVal;
+  });
+  const attendanceItems = attendanceSorted.filter(item=>item.attendance !== null && item.attendance !== undefined).slice(0,3);
+  document.getElementById('attendance-risk').innerHTML = attendanceItems.length ? attendanceItems.map(item=>
+    `<div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.85rem">
+       <span>${item.name}</span><span style="color:#fb923c;font-weight:700">${item.attendance}%</span>
+     </div>`
+  ).join('') : '<div class="performance-placeholder">Attendance data missing</div>';
+
+  renderPerformancePanel(usableStudents, meta);
+  renderOutcomeLists(usableStudents, meta);
+  renderSubjectProgress(usableStudents, meta);
+
+  buildTrendChart();
+  buildDistChart(usableStudents, meta);
+  buildSubjectChart(usableStudents, meta);
+  buildGradeDonut(usableStudents, meta);
+  buildScatterChart(usableStudents, meta);
+}
+
+function renderPerformancePanel(students, meta){
+  const passEl = document.getElementById('perf-pass-count');
+  const failEl = document.getElementById('perf-fail-count');
+  const confEl = document.getElementById('perf-confidence');
+  const listEl = document.getElementById('perf-list');
+  const predictionKey = meta?.predictionKey;
+
+  if(!predictionKey && !meta?.scoreKey && !meta?.gradeKey){
+    passEl.textContent = 'n/a';
+    failEl.textContent = 'n/a';
+    confEl.textContent = 'n/a';
+    listEl.innerHTML = '<div class="performance-placeholder">No prediction or result column detected yet.</div>';
+    return;
+  }
+
+  const entries = students.map((student, idx)=>{
+    const value = determinePassStatus(student, meta, students);
+    return {
+      name: formatStudentName(student, idx, meta),
+      prediction: value,
+    };
+  }).filter(entry=>entry.prediction !== null);
+  const passCount = entries.filter(entry=>entry.prediction === true).length;
+  const failCount = entries.filter(entry=>entry.prediction === false).length;
+
+  passEl.textContent = passCount;
+  failEl.textContent = failCount;
+  confEl.textContent = entries.length ? `${Math.round(passCount/entries.length*100)}% passing` : 'n/a';
+
+  const sortedByRisk = [...entries].sort((a,b)=>Number(a.prediction) - Number(b.prediction));
+  const displayItems = sortedByRisk.slice(0,6);
+  if(!displayItems.length){
+    listEl.innerHTML = '<div class="performance-placeholder">Upload or reload to see AI predictions.</div>';
+    return;
+  }
+
+  listEl.innerHTML = displayItems.map(entry=>`
+    <div class="performance-list-row">
+      <span>${entry.name}</span>
+      <span class="performance-light ${entry.prediction?'green':'red'}"></span>
+    </div>
+  `).join('');
+}
+
+function interpretPredictionValue(value){
+  if(value === undefined || value === null || value === "") return null;
+  const numeric = toNumber(value);
+  if(numeric !== null) return numeric >= 1;
+  const normalized = String(value).toLowerCase().replace(/[^a-z0-9]/g,"");
+  const passTokens = new Set(["pass","passed","passing","positive","true","yes","predictedpass","predicted","ok","clear","cleared","successful","eligible","promoted","promotednextclass","qualified","completed","complete","firstclass","secondclass","distinction","satisfactory","goodstanding"]);
+  const riskTokens = new Set(["risk","atrisk","at-risk","fail","failed","failing","negative","false","no","predictedfail","predictedrisk","detain","detained","atkt","atktin","backlog","arrear","arrears","kt","reappear","supplementary","withheld","withheldresult","malpractice","debarred","dropout","drop","incomplete","notcleared","notqualified","noteligible","notpromoted","notsuccessful","absent"]);
+  if(passTokens.has(normalized)) return true;
+  if(riskTokens.has(normalized)) return false;
+  return null;
+}
+
+function determineKnownOutcome(student, meta){
+  const gradeKey = meta?.gradeKey;
+  if(gradeKey){
+    const gradeOutcome = interpretPredictionValue(student[gradeKey]);
+    if(gradeOutcome !== null) return gradeOutcome;
+  }
+
+  return null;
+}
+
+function estimateScoreRiskThreshold(students, meta){
+  const scoreKey = meta?.scoreKey;
+  if(!scoreKey) return null;
+
+  const scores = students.map(student=>toNumber(student[scoreKey])).filter(score=>score !== null);
+  if(scores.length < 2) return null;
+
+  const sorted = [...scores].sort((a,b)=>a-b);
+  const quantile = q=>{
+    const pos = (sorted.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    const next = sorted[Math.min(base + 1, sorted.length - 1)];
+    return sorted[base] + (next - sorted[base]) * rest;
+  };
+
+  const allPercentLike = sorted.every(score=>score >= 0 && score <= 100);
+  if(allPercentLike){
+    const mean = sorted.reduce((a,b)=>a+b,0) / sorted.length;
+    const variance = sorted.reduce((sum, value)=>sum + ((value - mean) ** 2), 0) / sorted.length;
+    const std = Math.sqrt(variance);
+    return Math.min(quantile(0.25), mean - Math.max(2, std * 0.4));
+  }
+
+  const high = quantile(0.9);
+  return Math.min(quantile(0.25), high * 0.45);
+}
+
+function determineScoreFallback(student, meta, students = []){
+  const scoreKey = meta?.scoreKey;
+  if(scoreKey){
+    const score = toNumber(student[scoreKey]);
+    const threshold = estimateScoreRiskThreshold(students, meta);
+    if(score !== null && threshold !== null) return score >= threshold;
+  }
+
+  return null;
+}
+
+function determinePassStatus(student, meta, students = []){
+  const knownOutcome = determineKnownOutcome(student, meta);
+  if(knownOutcome !== null) return knownOutcome;
+
+  const predictionKey = meta?.predictionKey;
+  if(predictionKey){
+    const prediction = interpretPredictionValue(student[predictionKey]);
+    if(prediction !== null) return prediction;
+  }
+
+  return determineScoreFallback(student, meta, students);
+}
+
+function summarizePerformance(students, meta){
+  const statuses = students.map(student=>determinePassStatus(student, meta, students));
+  const knownStatuses = statuses.filter(status=>status !== null);
+  const passCount = knownStatuses.filter(Boolean).length;
+  const riskCount = knownStatuses.filter(status=>status === false).length;
+
+  return {
+    statuses,
+    passCount,
+    riskCount,
+    knownCount: knownStatuses.length,
+    passRate: knownStatuses.length ? Math.round(passCount / knownStatuses.length * 100) : null,
+  };
+}
+
+function isRenderableStudent(student, meta, idx){
+  const displayName = formatStudentName(student, idx, meta);
+  const normalized = normalizeKey(displayName);
+  if(["nameofstudent","studentname","maximummarks","maximum","remark","result"].includes(normalized)) return false;
+
+  const scoreKey = meta?.scoreKey;
+  if(scoreKey){
+    const score = toNumber(student[scoreKey]);
+    if(score === null) return false;
+  }
+
+  return true;
+}
+
+function renderOutcomeLists(students, meta){
+  const passEl = document.getElementById('passing-list');
+  const riskEl = document.getElementById('at-risk-list');
+  const statusEl = document.getElementById('status');
+
+  if(!students.length){
+    passEl.innerHTML = '<div class="performance-placeholder">No students loaded.</div>';
+    riskEl.innerHTML = '<div class="performance-placeholder">No students loaded.</div>';
+    if(statusEl) statusEl.textContent = 'No students loaded';
+    return;
+  }
+
+  const passing = [];
+  const risk = [];
+  const unknown = [];
+  students.forEach((student, idx)=>{
+    const passStatus = determinePassStatus(student, meta, students);
+    const name = formatStudentName(student, idx, meta);
+    const rowClass = passStatus===true?'pass':passStatus===false?'risk':'unknown';
+    const label = passStatus===true?'Pass':passStatus===false?'Risk':'Unknown';
+    const row = `<div class="outcome-row ${rowClass}"><span>${name}</span><span class="outcome-badge ${rowClass}">${label}</span></div>`;
+    if(passStatus===true){
+      passing.push(row);
+    }else if(passStatus===false){
+      risk.push(row);
+    }else{
+      unknown.push(row);
+    }
+  });
+
+  passEl.innerHTML = passing.length ? passing.join('') : '<div class="performance-placeholder">No passing students yet.</div>';
+  riskEl.innerHTML = risk.length ? risk.join('') : (unknown.length ? unknown.join('') : '<div class="performance-placeholder">No at-risk students yet.</div>');
+  if(statusEl){
+    statusEl.textContent = `${students.length} students · ${passing.length} passing · ${risk.length} at risk`;
+  }
+}
+
+
+// ─── NAV & AUTH ───────────────────────────────────────────
+
+function gatherSubjectEntries(students, meta){
+  const schemaSubjectColumns = Array.isArray(meta?.subjectColumns)
+    ? meta.subjectColumns.filter(key=>!/^column[_\s-]?\d+$/i.test(String(key).trim()))
+    : [];
+
+  if(schemaSubjectColumns.length){
+    return schemaSubjectColumns.filter(key=>!isNonPerformanceKey(key)).map(key=>{
+      const values = students.map(student=>toNumber(student[key])).filter(value=>value!==null);
+      const avg = values.length ? Math.round(values.reduce((a,b)=>a+b,0) / values.length) : 0;
+      return {label: humanizeLabel(key), percent: Math.min(Math.max(avg,0),100)};
+    }).filter(entry=>entry.percent > 0).sort((a,b)=>b.percent-a.percent);
+  }
+
+  const subjectKey = meta?.subjectKey;
+  const scoreKey = meta?.scoreKey;
+  if(subjectKey && scoreKey){
+    const summary = {};
+    students.forEach(student=>{
+      const rawLabel = student[subjectKey];
+      const label = rawLabel ? String(rawLabel).trim() : null;
+      if(!label) return;
+      const value = toNumber(student[scoreKey]);
+      if(value === null) return;
+      if(!summary[label]) summary[label]={total:0,count:0};
+      summary[label].total += value;
+      summary[label].count += 1;
+    });
+    const entries = Object.entries(summary).map(([label,data])=>{
+      const percent = data.count ? Math.round(data.total/data.count) : 0;
+      return {label, percent: Math.min(Math.max(percent,0),100)};
+    }).sort((a,b)=>b.percent-a.percent);
+    if(entries.length) return entries;
+  }
+
+  if(!students.length) return [];
+  const knownKeys = new Set([meta?.nameKey, meta?.emailKey, meta?.idKey, meta?.scoreKey, meta?.attendanceKey, meta?.gradeKey, meta?.predictionKey, meta?.subjectKey]);
+  const firstRow = students[0];
+  const candidates = [];
+  const genericCandidates = [];
+  for(const key of Object.keys(firstRow)){
+    if(knownKeys.has(key)) continue;
+    if(isNonPerformanceKey(key)) continue;
+    if(['%','percent','percentage','result','remark','remarks','ai_target','ai_prediction'].includes(normalizeKey(key))) continue;
+    const values = students.map(s=>toNumber(s[key])).filter(v=>v!==null);
+    if(!values.length) continue;
+    const avg = Math.round(values.reduce((a,b)=>a+b,0)/values.length);
+    if(avg < 10) continue;
+    const entry = {label: humanizeLabel(key), percent: Math.min(Math.max(avg,0),100)};
+    if(/^column[_\s-]?\d+$/i.test(String(key).trim())){
+      genericCandidates.push(entry);
+    }else{
+      candidates.push(entry);
+    }
+  }
+  const selected = candidates.length ? candidates : genericCandidates;
+  return selected.sort((a,b)=>b.percent-a.percent);
+}
+
+function renderSubjectProgress(students, meta){
+  const container = document.getElementById('subject-progress');
+  if(!container){
+    return;
+  }
+  if(!students.length){
+    container.innerHTML = '<div class="performance-placeholder">Awaiting student data.</div>';
+    return;
+  }
+
+  const entries = gatherSubjectEntries(students, meta);
+  if(!entries.length){
+    container.innerHTML = '<div class="performance-placeholder">Subject data missing.</div>';
+    return;
+  }
+
+  const gradients = [
+    'linear-gradient(135deg,#4fffb0,#38bdf8)',
+    'linear-gradient(135deg,#38bdf8,#a78bfa)',
+    'linear-gradient(135deg,#a78bfa,#fb923c)',
+    'linear-gradient(135deg,#fb923c,#f472b6)',
+    'linear-gradient(135deg,#f472b6,#4fffb0)',
+    'linear-gradient(135deg,#a78bfa,#f472b6)'
+  ];
+
+  container.innerHTML = entries.map((entry,idx)=>`
+    <div class="progress-label">
+      <span>${entry.label}</span>
+      <span>${entry.percent}%</span>
+    </div>
+    <div class="progress-bg">
+      <div class="progress-fill" style="width:${entry.percent}%;background:${gradients[idx%gradients.length]}"></div>
+    </div>
+  `).join('');
+}
+
+let currentStudents = SAMPLE_STUDENTS;
+let currentUploadMode = 'combined';
+let dashboardRefreshTimer = null;
+const DASHBOARD_REFRESH_MS = 10000;
+let currentAttendanceSettings = {};
+let currentRecentScans = [];
+let currentLectureAttendance = [];
+
+const UPLOAD_MODE_CONFIG = {
+  combined: {
+    title: 'Drop combined CSV or PDF here or click to browse',
+    subtitle: 'Use this when one file already contains result data and attendance together.',
+    button: 'Upload Combined File',
+    uploading: 'Uploading combined file...',
+    missing: 'Please select a combined CSV or PDF file first.',
+  },
+  result: {
+    title: 'Drop result CSV or PDF here or click to browse',
+    subtitle: 'Use this for marksheet/result data. You can upload attendance separately later.',
+    button: 'Upload Result File',
+    uploading: 'Uploading result file...',
+    missing: 'Please select a result CSV or PDF file first.',
+  }
+};
+
+function setUploadMode(mode){
+  currentUploadMode = UPLOAD_MODE_CONFIG[mode] ? mode : 'combined';
+  const config = UPLOAD_MODE_CONFIG[currentUploadMode];
+  document.querySelectorAll('.upload-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.uploadMode === currentUploadMode);
+  });
+  const titleEl = document.getElementById('upload-title');
+  const subtitleEl = document.getElementById('upload-subtitle');
+  const helpEl = document.getElementById('upload-help');
+  const uploadBtn = document.getElementById('upload-btn');
+  if(titleEl) titleEl.textContent = config.title;
+  if(subtitleEl) subtitleEl.textContent = 'Accepts .csv and table-based .pdf files';
+  if(helpEl) helpEl.textContent = config.subtitle;
+  if(uploadBtn) uploadBtn.textContent = config.button;
+}
+
+async function updateDashboardFromServer(){
+  let serverStudents = SAMPLE_STUDENTS;
+  let serverSchema = {};
+  let attendanceSettings = {};
+  let recentScans = [];
+  let lectureAttendance = [];
+  try{
+    const response = await fetch(`${API}/api/students`);
+    if(response.ok){
+      const payload = await response.json();
+      if(payload && payload.schema && typeof payload.schema === 'object'){
+        serverSchema = payload.schema;
+      }
+       if(payload && payload.attendance_settings && typeof payload.attendance_settings === 'object'){
+        attendanceSettings = payload.attendance_settings;
+      }
+      if(payload && Array.isArray(payload.recent_scans)){
+        recentScans = payload.recent_scans;
+      }
+      if(payload && Array.isArray(payload.lecture_attendance)){
+        lectureAttendance = payload.lecture_attendance;
+      }
+      if(Array.isArray(payload.records) && payload.records.length){
+        serverStudents = payload.records;
+      }else if(Array.isArray(payload.records)){
+        serverStudents = payload.records;
+      }
+    }else{
+      console.warn("Failed to load students:", response.status);
+    }
+  }catch(err){
+    console.warn("Unable to reach backend:", err);
+  }
+  currentSchema = serverSchema;
+  currentStudents = serverStudents;
+  currentAttendanceSettings = attendanceSettings;
+  currentRecentScans = recentScans;
+  currentLectureAttendance = lectureAttendance;
+  renderDashboard(currentStudents);
+  renderAttendanceSettings();
+  renderStudentOptions();
+  renderRecentRFIDScans();
+  renderLectureAttendanceStatus();
+}
+
+function renderAttendanceSettings(){
+  const totalInput = document.getElementById('total-lectures-value');
+  const summaryEl = document.getElementById('attendance-summary');
+  const lastScanEl = document.getElementById('rfid-last-scan');
+  const settings = currentAttendanceSettings || {};
+
+  if(totalInput && settings.total_lectures !== undefined && settings.total_lectures !== null){
+    totalInput.value = settings.total_lectures;
+  }
+
+  if(summaryEl){
+    const effective = settings.effective_total_lectures;
+    if(effective !== undefined && effective !== null){
+      const configured = settings.total_lectures ?? 'not set';
+      summaryEl.textContent = `Configured total lectures: ${configured}. Attendance percentage is currently calculated using ${effective} lecture(s).`;
+    }else{
+      summaryEl.textContent = 'Set the total lectures here. RFID scans count one lecture per student per hour.';
+    }
+  }
+
+  if(lastScanEl){
+    if(settings.last_scan_name){
+      const when = settings.last_scan_at ? ` at ${new Date(settings.last_scan_at).toLocaleString()}` : '';
+      const lecture = settings.last_scan_lecture_id ? ` · Slot ${settings.last_scan_lecture_id}` : '';
+      lastScanEl.textContent = `Last RFID scan: ${settings.last_scan_name}${when}${lecture}`;
+    }else{
+      lastScanEl.textContent = 'Last RFID scan: waiting for first scan.';
+    }
+  }
+}
+
+function isTodayTimestamp(value){
+  if(!value) return false;
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return false;
+  return date.toDateString() === new Date().toDateString();
+}
+
+function isTodayLectureId(value){
+  if(!value) return false;
+  const today = new Date();
+  const stamp = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  return String(value).startsWith(stamp);
+}
+
+async function resetAttendanceForStudent(studentName, lectureId){
+  const statusEl = document.getElementById('attendance-status');
+  if(!studentName || !lectureId) return;
+
+  statusEl.textContent = `Resetting attendance for ${studentName}...`;
+  try{
+    const response = await fetch(`${API}/api/attendance/reset`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        student_name: studentName,
+        lecture_id: lectureId
+      })
+    });
+    const payload = await response.json().catch(()=>({message:'Attendance reset failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Attendance reset failed');
+    }
+    statusEl.textContent = payload.message || 'Attendance reset successfully.';
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'Attendance reset failed.';
+  }
+}
+
+async function resetAttendanceForLecture(lectureId){
+  const statusEl = document.getElementById('attendance-status');
+  if(!lectureId) return;
+
+  statusEl.textContent = 'Resetting full attendance list...';
+  try{
+    const response = await fetch(`${API}/api/attendance/reset`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        lecture_id: lectureId
+      })
+    });
+    const payload = await response.json().catch(()=>({message:'Attendance reset failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Attendance reset failed');
+    }
+    statusEl.textContent = payload.message || 'Attendance reset successfully.';
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'Attendance reset failed.';
+  }
+}
+
+function renderRecentRFIDScans(){
+  const listEl = document.getElementById('rfid-scan-list');
+  if(!listEl) return;
+
+  const todaysScans = currentRecentScans.filter(scan=>isTodayTimestamp(scan.created_at));
+  if(!todaysScans.length){
+    listEl.innerHTML = '<div class="performance-placeholder">No RFID scans for today.</div>';
+    return;
+  }
+
+  listEl.innerHTML = todaysScans.map(scan=>{
+    const name = scan.student_name || 'Unknown card';
+    const when = scan.created_at ? new Date(scan.created_at).toLocaleString() : '';
+    const statusToken = String(scan.status || '').toLowerCase();
+    const statusLabel = statusToken === 'unmatched'
+      ? 'UNDEFINED'
+      : (statusToken === 'matched' || statusToken === 'duplicate' ? 'PRESENT' : statusToken.toUpperCase());
+    const statusColor = statusLabel === 'PRESENT' ? '#4fffb0' : '#f59e0b';
+    return `
+      <div class="attendance-list-row">
+        <span>${name}</span>
+        <span class="attendance-list-meta">
+          <span style="color:${statusColor};font-weight:700">${statusLabel}</span><br>
+          <span>${when}</span>
+        </span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderLectureAttendanceStatus(){
+  const listEl = document.getElementById('rfid-lecture-status');
+  if(!listEl) return;
+
+  const todaysAttendance = currentLectureAttendance
+    .filter(item=>isTodayLectureId(item.lecture_id))
+    .sort((a,b)=>{
+      const aPresent = String(a.status || '').toUpperCase() === 'PRESENT' ? 0 : 1;
+      const bPresent = String(b.status || '').toUpperCase() === 'PRESENT' ? 0 : 1;
+      if(aPresent !== bPresent) return aPresent - bPresent;
+      return String(a.student_name || '').localeCompare(String(b.student_name || ''));
+    });
+  if(!todaysAttendance.length){
+    listEl.innerHTML = '<div class="performance-placeholder">No lecture attendance marked for today.</div>';
+    return;
+  }
+
+  listEl.innerHTML = todaysAttendance.map(item=>{
+    const status = String(item.status || '').toUpperCase();
+    const color = status === 'PRESENT' ? '#4fffb0' : (status === 'ABSENT' ? '#f87171' : '#f59e0b');
+    const suffix = status === 'UNDEFINED' && item.rfid ? ` (${item.rfid})` : '';
+    return `
+      <div class="attendance-list-row">
+        <span>${item.student_name || 'Unknown card'}${suffix}</span>
+        <span class="attendance-list-meta">
+          <span style="color:${color};font-weight:700">${status}</span>
+        </span>
+      </div>
+    `;
+  }).join('');
+}
+
+function getStudentLookupEntries(){
+  const meta = currentMeta || createMeta(currentStudents, currentSchema);
+  return (currentStudents || []).map((student, idx)=>{
+    const name = formatStudentName(student, idx, meta);
+    const id = meta?.idKey && student?.[meta.idKey] !== undefined && student?.[meta.idKey] !== null
+      ? String(student[meta.idKey]).trim()
+      : '';
+    const label = id ? `${name} (${id})` : name;
+    return {name, id, label};
+  }).filter(entry=>entry.name && entry.name !== `Student ${NaN}`);
+}
+
+function renderStudentOptions(){
+  const datalist = document.getElementById('student-options');
+  if(!datalist) return;
+  const entries = getStudentLookupEntries();
+  const seen = new Set();
+  datalist.innerHTML = entries.filter(entry=>{
+    const key = `${entry.name}|${entry.id}`;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).map(entry=>`<option value="${entry.label}"></option>`).join('');
+}
+
+function resolveStudentSelection(rawValue){
+  const value = (rawValue || '').trim();
+  if(!value) return null;
+  const entries = getStudentLookupEntries();
+  const normalizedValue = normalizeKey(value);
+  return entries.find(entry=>{
+    const byLabel = normalizeKey(entry.label) === normalizedValue;
+    const byName = normalizeKey(entry.name) === normalizedValue;
+    const byId = entry.id && normalizeKey(entry.id) === normalizedValue;
+    return byLabel || byName || byId;
+  }) || null;
+}
+
+function syncStudentInputsFromSelection(rawValue){
+  const match = resolveStudentSelection(rawValue);
+  if(!match) return;
+  document.getElementById('attendance-student-name').value = match.name || '';
+  document.getElementById('attendance-student-id').value = match.id || '';
+}
+
+function startDashboardAutoRefresh(){
+  if(dashboardRefreshTimer) return;
+  dashboardRefreshTimer = setInterval(()=>{
+    const dashboard = document.getElementById('dashboard');
+    if(dashboard && !dashboard.classList.contains('hidden')){
+      updateDashboardFromServer();
+    }
+  }, DASHBOARD_REFRESH_MS);
+}
+
+function stopDashboardAutoRefresh(){
+  if(!dashboardRefreshTimer) return;
+  clearInterval(dashboardRefreshTimer);
+  dashboardRefreshTimer = null;
+}
+
+function showSection(id){
+  ['login-form','register-form','dashboard'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s!==id);
+  });
+  if(id === 'dashboard'){
+    startDashboardAutoRefresh();
+  }else{
+    stopDashboardAutoRefresh();
+  }
+  if(id === 'login-form'){
+    const loginError = document.getElementById('login-error');
+    if(loginError) loginError.textContent = '';
+  }
+  if(id !== 'login-form'){
+    const forgotPanel = document.getElementById('forgot-password-panel');
+    const forgotMessage = document.getElementById('forgot-password-message');
+    if(forgotPanel) forgotPanel.classList.add('hidden');
+    if(forgotMessage) forgotMessage.textContent = '';
+  }
+}
+
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPassword(password){
+  return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+}
+
+document.getElementById('login-btn').onclick=()=>{
+  showSection('login-form');
+  document.getElementById('login-btn').classList.add('hidden');
+  document.getElementById('register-btn').classList.remove('hidden');
+};
+document.getElementById('register-btn').onclick=()=>{
+  showSection('register-form');
+  document.getElementById('register-btn').classList.add('hidden');
+  document.getElementById('login-btn').classList.remove('hidden');
+};
+
+document.getElementById('jump-to-register').onclick=()=>document.getElementById('register-btn').click();
+document.getElementById('forgot-password-toggle').onclick=()=>{
+  const panel = document.getElementById('forgot-password-panel');
+  const message = document.getElementById('forgot-password-message');
+  if(message) message.textContent = '';
+  panel.classList.toggle('hidden');
+};
+
+document.getElementById('register').onsubmit=async e=>{
+  e.preventDefault();
+  const name = document.getElementById('register-name').value.trim();
+  const email = document.getElementById('register-email').value.trim();
+  const password = document.getElementById('register-password').value;
+
+  if(!name || !email || !password){
+    alert('Please fill out every field before registering.');
+    return;
+  }
+  if(!isValidEmail(email)){
+    alert('Use a valid email format like name@example.com.');
+    return;
+  }
+  if(!isValidPassword(password)){
+    alert('Password must be at least 8 characters and include at least 1 letter and 1 number.');
+    return;
+  }
+
+  try{
+    const response = await fetch(API + '/api/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, email, password})
+    });
+
+    if(!response.ok){
+      const error = await response.json().catch(()=>({detail: response.statusText}));
+      throw new Error(error.detail || 'Registration failed');
+    }
+
+    document.getElementById('welcome-msg').textContent = `Hello, ${name.split(' ')[0]} 👋`;
+    showSection('dashboard');
+    document.getElementById('login-btn').classList.add('hidden');
+    document.getElementById('register-btn').classList.add('hidden');
+    document.getElementById('dashboard-btn').classList.remove('hidden');
+    setTimeout(()=>updateDashboardFromServer(), 100);
+    alert('Registration successful — student data can now be uploaded.');
+  }catch(err){
+    alert(err.message || 'Registration failed.');
+  }
+};
+
+async function handleLoginSubmit(e){
+  e.preventDefault();
+  const loginError = document.getElementById('login-error');
+  if(loginError) loginError.textContent = '';
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if(!isValidEmail(email)){
+    if(loginError) loginError.textContent = 'Use a valid email format like name@example.com.';
+    return false;
+  }
+
+  try{
+    const response = await fetch(API + '/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+
+    if(!response.ok){
+      const errorPayload = await response.json().catch(()=>({detail: response.statusText}));
+      throw new Error(errorPayload.detail || errorPayload.message || 'Invalid credentials');
+    }
+
+    const payload = await response.json();
+    const rawName = payload.name || email.split('@')[0];
+    const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    document.getElementById('welcome-msg').textContent = `Hello, ${displayName} 👋`;
+    showSection('dashboard');
+    document.getElementById('login-btn').classList.add('hidden');
+    document.getElementById('register-btn').classList.add('hidden');
+    document.getElementById('dashboard-btn').classList.remove('hidden');
+    setTimeout(()=>updateDashboardFromServer(), 100);
+  }catch(err){
+    if(loginError) loginError.textContent = err.message || 'Invalid credentials';
+  }
+  return false;
+}
+
+const loginForm = document.getElementById('login');
+if(loginForm){
+  loginForm.addEventListener('submit', handleLoginSubmit);
+}
+
+const forgotPasswordForm = document.getElementById('forgot-password-form');
+if(forgotPasswordForm){
+  forgotPasswordForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const messageEl = document.getElementById('forgot-password-message');
+    const email = document.getElementById('forgot-email').value.trim();
+    const newPassword = document.getElementById('forgot-password').value;
+    messageEl.style.color = 'var(--muted)';
+    messageEl.textContent = '';
+
+    if(!isValidEmail(email)){
+      messageEl.style.color = '#f87171';
+      messageEl.textContent = 'Use a valid email format like name@example.com.';
+      return;
+    }
+
+    if(!isValidPassword(newPassword)){
+      messageEl.style.color = '#f87171';
+      messageEl.textContent = 'Password must be at least 8 characters and include at least 1 letter and 1 number.';
+      return;
+    }
+
+    try{
+      const response = await fetch(API + '/api/forgot-password', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, new_password: newPassword})
+      });
+
+      const payload = await response.json().catch(()=>({detail: response.statusText}));
+      if(!response.ok){
+        throw new Error(payload.detail || payload.message || 'Password update failed');
+      }
+
+      messageEl.style.color = '#4fffb0';
+      messageEl.textContent = payload.message || 'Password updated successfully.';
+      document.getElementById('login-email').value = email;
+      forgotPasswordForm.reset();
+    }catch(err){
+      messageEl.style.color = '#f87171';
+      messageEl.textContent = err.message || 'Password update failed.';
+    }
+  });
+}
+
+document.getElementById('logout-btn').onclick=()=>{
+  showSection('login-form');
+  document.getElementById('login-btn').classList.remove('hidden');
+  document.getElementById('register-btn').classList.remove('hidden');
+  document.getElementById('dashboard-btn').classList.add('hidden');
+};
+
+document.getElementById('dashboard-btn').onclick=()=>showSection('dashboard');
+
+// RELOAD
+document.getElementById('refresh').onclick=()=>{
+  document.getElementById('status').textContent = 'Loading...';
+  setTimeout(()=>updateDashboardFromServer(),300);
+};
+
+// PERFORMANCE TAB
+const performanceTabs = document.querySelectorAll('.performance-tab-btn');
+const performancePanels = document.querySelectorAll('.performance-panel');
+performanceTabs.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = btn.dataset.panelTarget;
+    performanceTabs.forEach(tab=>tab.classList.toggle('active', tab===btn));
+    performancePanels.forEach(panel=>panel.classList.toggle('active', panel.dataset.panelContent===target));
+  });
+});
+
+document.querySelectorAll('.upload-tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    setUploadMode(btn.dataset.uploadMode || 'combined');
+  });
+});
+setUploadMode(currentUploadMode);
+
+// FILE UPLOAD
+document.getElementById('upload-btn').onclick=async ()=>{
+  const file = document.getElementById('csv-file').files[0];
+  const statusEl = document.getElementById('upload-status');
+  const config = UPLOAD_MODE_CONFIG[currentUploadMode] || UPLOAD_MODE_CONFIG.combined;
+  if(!file){statusEl.textContent=config.missing;return;}
+  const formData = new FormData();
+  formData.append('file', file);
+  statusEl.textContent = config.uploading;
+
+  try{
+    const response = await fetch(`${API}/api/upload-data`,{
+      method:'POST',
+      body:formData
+    });
+    const payload = await response.json().catch(()=>({message:'Upload failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail||payload.message||'Upload failed');
+    }
+    const sourceType = String(payload.source_type || (file.name.split('.').pop() || 'file')).toUpperCase();
+    const trainingNote = payload.training_used
+      ? `Upload complete: ${sourceType} with ${payload.columns.length} columns, accuracy ${payload.accuracy?.toFixed(2)??'n/a'}`
+      : `Upload complete: ${sourceType} stored as reference data without retraining`;
+    statusEl.textContent = payload.message || trainingNote;
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'Upload failed.';
+  }
+};
+
+document.getElementById('attendance-update-btn').onclick=async ()=>{
+  syncStudentInputsFromSelection(document.getElementById('attendance-student-search').value);
+  const studentId = document.getElementById('attendance-student-id').value.trim();
+  const studentName = document.getElementById('attendance-student-name').value.trim();
+  const attendanceValue = document.getElementById('attendance-value').value.trim();
+  const statusEl = document.getElementById('attendance-status');
+
+  if(!studentId && !studentName){
+    statusEl.textContent = 'Enter either student ID or student name.';
+    return;
+  }
+  if(attendanceValue === ''){
+    statusEl.textContent = 'Enter attendance percentage first.';
+    return;
+  }
+
+  statusEl.textContent = 'Updating attendance...';
+  try{
+    const response = await fetch(`${API}/api/attendance/update`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        student_id: studentId || null,
+        student_name: studentName || null,
+        attendance: Number(attendanceValue),
+        source: 'manual'
+      })
+    });
+    const payload = await response.json().catch(()=>({message:'Attendance update failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Attendance update failed');
+    }
+
+    statusEl.textContent = payload.message || 'Attendance updated successfully.';
+    document.getElementById('attendance-student-search').value = '';
+    document.getElementById('attendance-student-id').value = '';
+    document.getElementById('attendance-student-name').value = '';
+    document.getElementById('attendance-value').value = '';
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'Attendance update failed.';
+  }
+};
+
+document.getElementById('attendance-student-search').addEventListener('change', e=>{
+  syncStudentInputsFromSelection(e.target.value);
+});
+
+document.getElementById('rfid-link-student').addEventListener('change', e=>{
+  const match = resolveStudentSelection(e.target.value);
+  if(match){
+    e.target.value = match.label;
+  }
+});
+
+document.getElementById('total-lectures-btn').onclick=async ()=>{
+  const totalLectures = document.getElementById('total-lectures-value').value.trim();
+  const statusEl = document.getElementById('attendance-status');
+
+  if(totalLectures === ''){
+    statusEl.textContent = 'Enter total lectures first.';
+    return;
+  }
+
+  statusEl.textContent = 'Saving total lectures...';
+  try{
+    const response = await fetch(`${API}/api/attendance/config`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({total_lectures: Number(totalLectures)})
+    });
+    const payload = await response.json().catch(()=>({message:'Total lecture update failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'Total lecture update failed');
+    }
+
+    statusEl.textContent = payload.message || 'Total lectures updated successfully.';
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'Total lecture update failed.';
+  }
+};
+
+document.getElementById('rfid-link-btn').onclick=async ()=>{
+  const rfidValue = document.getElementById('rfid-link-value').value.trim();
+  const studentValue = document.getElementById('rfid-link-student').value.trim();
+  const statusEl = document.getElementById('rfid-link-status');
+  const match = resolveStudentSelection(studentValue);
+
+  if(!rfidValue){
+    statusEl.textContent = 'Enter RFID UID first.';
+    return;
+  }
+  if(!match){
+    statusEl.textContent = 'Select a student from the current dataset.';
+    return;
+  }
+
+  statusEl.textContent = 'Linking RFID...';
+  try{
+    const response = await fetch(`${API}/api/attendance/link-rfid`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        rfid: rfidValue,
+        student_id: match.id || null,
+        student_name: match.name || null
+      })
+    });
+    const payload = await response.json().catch(()=>({message:'RFID link failed'}));
+    if(!response.ok){
+      throw new Error(payload.detail || payload.message || 'RFID link failed');
+    }
+
+    statusEl.textContent = payload.message || 'RFID linked successfully.';
+    document.getElementById('rfid-link-value').value = '';
+    document.getElementById('rfid-link-student').value = '';
+    await updateDashboardFromServer();
+  }catch(err){
+    statusEl.textContent = err.message || 'RFID link failed.';
+  }
+};
+
+document.getElementById('rfid-reset-all-btn').onclick=async ()=>{
+  const lectureId = currentAttendanceSettings?.last_scan_lecture_id
+    || (currentLectureAttendance.find(item=>isTodayLectureId(item.lecture_id)) || {}).lecture_id;
+  const statusEl = document.getElementById('attendance-status');
+
+  if(!lectureId){
+    statusEl.textContent = 'No current attendance list found to reset.';
+    return;
+  }
+
+  await resetAttendanceForLecture(lectureId);
+};
+
+// EXPORT PDF
+document.getElementById('exportPDF').onclick=()=>{
+  const {jsPDF} = window.jspdf;
+  const meta = currentMeta || createMeta(currentStudents);
+  const deriveGradeFromScore = score=>{
+    if(score === null) return 'Unknown';
+    if(score >= 90) return 'A';
+    if(score >= 80) return 'B';
+    if(score >= 70) return 'C';
+    if(score >= 60) return 'D';
+    return 'F';
+  };
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text('EduPredict — Student Report',14,22);
+  doc.setFontSize(11);
+  doc.setTextColor(100);
+  doc.text(`Generated: ${new Date().toLocaleDateString()}`,14,30);
+  let y=42;
+  currentStudents.forEach((s,i)=>{
+    const name = formatStudentName(s, i, meta);
+    const score = meta?.scoreKey ? toNumber(s[meta.scoreKey]) : null;
+    const attendance = meta?.attendanceKey ? toNumber(s[meta.attendanceKey]) : null;
+    const rawGrade = meta?.gradeKey ? s[meta.gradeKey] : null;
+    const grade = rawGrade === undefined || rawGrade === null || rawGrade === ""
+      ? deriveGradeFromScore(score)
+      : String(rawGrade);
+    s.name = name;
+    s.score = score ?? 'n/a';
+    s.attendance = attendance ?? 'n/a';
+    s.grade = grade;
+    doc.setTextColor(0);
+    doc.text(`${i+1}. ${s.name} — Score: ${s.score} | Attendance: ${s.attendance}% | Grade: ${s.grade}`,14,y);
+    y+=8;
+    if(y>270){doc.addPage();y=20;}
+  });
+  doc.save('edumetrics_report.pdf');
+};
+
+// FILE label update
+document.getElementById('csv-file').onchange=function(){
+  if(this.files[0]) document.getElementById('upload-status').textContent = `Selected: ${this.files[0].name}`;
+};
+
+// Default route
+showSection('login-form');
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+.venv/
+backend/.venv/
+frontend/node_modules/
+backend/node_modules/
+__pycache__/
+*.pyc
+.env
+pytest-cache-files-*/
+backend/data/uploads/
+backend/__pycache__/
+frontend/.vite/
