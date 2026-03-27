@@ -297,7 +297,7 @@ input:focus{
 </main>
 
 <script>
-const API = "http://127.0.0.1:8000";
+const API = window.location.origin;
 const ADMIN_SESSION_KEY = "edupredict-admin-auth";
 let adminUsers = [];
 const ADMIN_LOGIN_ENDPOINTS = [
@@ -449,23 +449,27 @@ document.getElementById('admin-login-form').addEventListener('submit', async eve
     let payload = null;
 
     for(const endpoint of ADMIN_LOGIN_ENDPOINTS){
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({email, password})
-      });
+      try{
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, password})
+        });
 
-      payload = await response.json().catch(() => ({detail: response.statusText}));
-      if(response.ok){
-        lastError = null;
-        break;
+        payload = await response.json().catch(() => ({detail: response.statusText}));
+        if(response.ok){
+          lastError = null;
+          break;
+        }
+
+        if(response.status !== 404){
+          throw new Error(payload.detail || payload.message || 'Admin login failed');
+        }
+
+        lastError = new Error(payload.detail || payload.message || 'Admin login endpoint not found');
+      }catch(fetchError){
+        lastError = fetchError;
       }
-
-      if(response.status !== 404){
-        throw new Error(payload.detail || payload.message || 'Admin login failed');
-      }
-
-      lastError = new Error(payload.detail || payload.message || 'Admin login endpoint not found');
     }
 
     if(lastError){

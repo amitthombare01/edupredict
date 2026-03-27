@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 const backendPort = process.env.API_PORT || process.env.PORT || 8000;
-const backendTarget = `http://127.0.0.1:${backendPort}`;
+const backendTarget = process.env.VITE_API_TARGET || `http://127.0.0.1:${backendPort}`;
 
 export default defineConfig({
   server: {
