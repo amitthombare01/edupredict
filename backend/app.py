@@ -2013,13 +2013,19 @@ def get_attendance_settings():
 
 def parse_datetime_value(value):
     if isinstance(value, datetime):
-        return value
-    if not value:
+        parsed = value
+    elif not value:
         return None
-    try:
-        return datetime.fromisoformat(str(value).strip())
-    except ValueError:
-        return None
+    else:
+        try:
+            parsed = datetime.fromisoformat(str(value).strip())
+        except ValueError:
+            return None
+
+    # Normalize mixed legacy timestamps so aware/naive values can be compared safely.
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def utc_now():
